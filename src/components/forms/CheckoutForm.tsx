@@ -177,7 +177,7 @@ export function CheckoutForm() {
               </select>
             )}
           </div>
-          {errors.time && <p role="alert" className="mt-1.5 text-sm text-[#e0836c]">{errors.time}</p>}
+          {errors.time && <p role="alert" className="mt-1.5 text-sm text-errore">{errors.time}</p>}
         </fieldset>
 
         <fieldset>
@@ -227,12 +227,12 @@ export function CheckoutForm() {
           <span className="font-display text-4xl text-ottone tabular-nums">{hydrated ? formatPrice(total, locale) : "—"}</span>
         </div>
         {belowMin && (
-          <p role="alert" className="mt-3 text-sm text-[#e0836c]">
+          <p role="alert" className="mt-3 text-sm text-errore">
             {errMap.min_order}
           </p>
         )}
-        {errors.items && <p role="alert" className="mt-3 text-sm text-[#e0836c]">{errors.items}</p>}
-        {errors.form && <p role="alert" className="mt-3 text-sm text-[#e0836c]">{errors.form}</p>}
+        {errors.items && <p role="alert" className="mt-3 text-sm text-errore">{errors.items}</p>}
+        {errors.form && <p role="alert" className="mt-3 text-sm text-errore">{errors.form}</p>}
         <button type="submit" disabled={sending || belowMin || !hydrated} className="btn btn-brass mt-6 w-full disabled:cursor-not-allowed disabled:opacity-50">
           {sending ? dict.checkout.submitting : dict.checkout.submit}
         </button>

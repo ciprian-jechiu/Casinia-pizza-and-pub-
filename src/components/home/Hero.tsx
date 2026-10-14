@@ -108,9 +108,10 @@ export function Hero() {
     // Wrapper stabil deținut de React: GSAP pune „pin-spacer” între el și <section>,
     // așa React nu mai găsește noduri mutate când navighezi între pagini (eroarea insertBefore).
     <div>
-    <section ref={root} className="relative h-[100svh] min-h-[620px] overflow-hidden bg-black" aria-labelledby="hero-title">
+    <section ref={root} className="relative h-[100svh] min-h-[620px] overflow-hidden bg-notte" aria-labelledby="hero-title">
       {/* ── cuptorul real ── */}
-      <div aria-hidden className="absolute inset-0">
+      {/* mix-blend-lighten: negrul fotografiei devine culoarea fundalului, fără margini vizibile */}
+      <div aria-hidden className="absolute inset-0 mix-blend-lighten">
         {/* poziționarea (translate) stă pe părinte, iar GSAP scalează doar copilul */}
         <div
           className="absolute left-1/2 top-[50%] w-[150vw] -translate-x-1/2 -translate-y-[55%] md:top-[57%] md:w-[min(92vw,84svh)]"
@@ -124,7 +125,7 @@ export function Hero() {
             priority
             sizes="(max-width: 768px) 150vw, 92vw"
             className="object-cover"
-            style={{ maskImage: "radial-gradient(ellipse 62% 60% at 50% 52%, black 62%, transparent 100%)" }}
+            style={{ maskImage: "radial-gradient(ellipse 50% 50% at 50% 52%, black 58%, transparent 100%)" }}
           />
           {/* pâlpâirea focului: o lumină caldă care respiră peste flăcări */}
           <div className="oven-flicker absolute inset-0 mix-blend-screen" />
@@ -151,7 +152,7 @@ export function Hero() {
           />
         </div>
         {/* umbră sus, ca semnătura să rămână lizibilă peste pizza */}
-        <div className="absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-black/85 via-black/45 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-notte/90 via-notte/50 to-transparent" />
         <div data-shade className="absolute inset-0 bg-gradient-to-r from-notte/95 via-notte/70 to-notte/10 opacity-0" />
       </div>
 
@@ -179,7 +180,7 @@ export function Hero() {
       </div>
 
       {/* ── text + acțiuni ── */}
-      <div data-bottom className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/85 to-transparent pb-[4svh] pt-20">
+      <div data-bottom className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-notte via-notte/85 to-transparent pb-[4svh] pt-20">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p data-fade className="mb-2 text-sm text-ottone">{dict.hero.kicker}</p>

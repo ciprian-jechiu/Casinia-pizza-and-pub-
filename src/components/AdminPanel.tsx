@@ -11,7 +11,7 @@ const statuses: Status[] = ["new", "confirmed", "done", "cancelled"];
 const statusColor: Record<Status, string> = {
   new: "bg-pomodoro text-crema",
   confirmed: "bg-ottone text-notte",
-  done: "bg-basilico text-crema",
+  done: "bg-basilico text-notte",
   cancelled: "bg-legno-2 text-crema-dim",
 };
 
@@ -92,7 +92,7 @@ export function AdminPanel() {
       <form onSubmit={login} className="max-w-sm space-y-4">
         <label htmlFor="pw" className="block text-sm text-crema-dim">{dict.admin.password}</label>
         <input id="pw" name="password" type="password" autoComplete="current-password" className="field" required />
-        {error && <p role="alert" className="text-sm text-[#e0836c]">{error}</p>}
+        {error && <p role="alert" className="text-sm text-errore">{error}</p>}
         <button className="btn btn-brass" disabled={loading}>{dict.admin.login}</button>
       </form>
     );

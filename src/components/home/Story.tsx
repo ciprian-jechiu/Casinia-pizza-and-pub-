@@ -58,7 +58,7 @@ export function Story() {
         <div data-parallax className="absolute -inset-y-[10%] inset-x-0">
           <Image src={menuImage(burger.image!, 1024)} alt={burger.name[locale]} fill sizes="(max-width: 768px) 90vw, 28rem" className="object-cover" />
         </div>
-        <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_80px_30px_rgb(21_16_12/.7)]" />
+        <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_80px_30px_rgb(11_16_12/.75)]" />
       </div>
     </section>
   );

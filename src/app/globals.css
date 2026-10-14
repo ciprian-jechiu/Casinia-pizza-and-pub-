@@ -9,16 +9,20 @@
    + două note italiene folosite rar: pomodoro și basilico
    ───────────────────────────────────────────── */
 @theme {
-  --color-notte: #15100c;      /* fundal: nuc închis */
-  --color-legno: #231912;      /* suprafețe: lemn */
-  --color-legno-2: #2e2219;    /* suprafețe ridicate */
-  --color-ottone: #c8a078;     /* nisip-auriu: culoarea exactă a textului din logo */
-  --color-ottone-soft: #a6835f;
-  --color-crema: #efe4d0;      /* text principal */
-  --color-crema-dim: #b9ab95;  /* text secundar */
-  --color-pomodoro: #a8452f;   /* accent italian, rar */
-  --color-basilico: #828c46;   /* verdele măsliniu al frunzei din logo */
-  --color-linia: #3a2c21;      /* linii, borduri */
+  /* Paleta „Notte verde”: verdele-noapte al frunzei din logo + nisipul-auriu al textului din logo */
+  --color-notte: #0b100c;          /* fundal: verde-noapte */
+  --color-legno: #142019;          /* suprafețe (carduri, coș) */
+  --color-legno-2: #1c2b22;        /* suprafețe ridicate (hover, elemente active) */
+  --color-ottone: #c8a078;         /* nisip-auriu: culoarea exactă a textului din logo */
+  --color-ottone-soft: #a6835f;    /* auriu stins: hover pe borduri */
+  --color-ottone-light: #e2c49e;   /* auriu luminos: hover pe butoane */
+  --color-crema: #efe8d8;          /* text principal — contrast 15.7:1 pe fundal */
+  --color-crema-dim: #b3b29c;      /* text secundar — contrast 8.9:1 */
+  --color-pomodoro: #9a3f2e;       /* accent italian, rar (insigna coșului) */
+  --color-basilico: #828c46;       /* verdele măsliniu al frunzei din logo */
+  --color-basilico-light: #b9c27a; /* verde pentru text pe fundal închis */
+  --color-errore: #e8907a;         /* mesaje de eroare — contrast 7.6:1 */
+  --color-linia: #2d2a1f;          /* linii fine: auriu la ~18% peste fundal */
 
   --font-display: "Cormorant Variable", "Cormorant", Georgia, serif;
   --font-sans: "Manrope Variable", "Manrope", system-ui, sans-serif;
@@ -52,6 +56,7 @@
     min-height: 100dvh;
     background:
       radial-gradient(120vw 80vh at 70% -10%, rgb(200 160 120 / 0.06), transparent 60%),
+      radial-gradient(90vw 70vh at 0% 60%, rgb(130 140 70 / 0.06), transparent 65%),
       var(--color-notte);
     overflow-x: clip;
   }
@@ -124,11 +129,11 @@
     color: var(--color-notte);
   }
   .btn-brass:hover {
-    background: var(--color-crema);
+    background: var(--color-ottone-light);
   }
   .btn-ghost {
-    border: 1px solid color-mix(in srgb, var(--color-crema) 30%, transparent);
-    color: var(--color-crema);
+    border: 1px solid color-mix(in srgb, var(--color-basilico) 75%, transparent);
+    color: var(--color-basilico-light);
   }
   .btn-ghost:hover {
     border-color: var(--color-ottone);

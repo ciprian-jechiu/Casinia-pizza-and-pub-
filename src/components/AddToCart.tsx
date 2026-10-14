@@ -65,7 +65,7 @@ export function AddToCart({
       ref={ref}
       type="button"
       onClick={onClick}
-      className={`${compact ? "min-h-10 px-4 text-sm" : ""} btn ${done ? "bg-basilico text-crema" : "btn-brass"} ${className}`}
+      className={`${compact ? "min-h-10 px-4 text-sm" : ""} btn ${done ? "bg-basilico text-notte" : "btn-brass"} ${className}`}
       aria-live="polite"
     >
       {done ? (

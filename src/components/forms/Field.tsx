@@ -21,7 +21,7 @@ export function Field({
       {children}
       {hint && !error && <p className="mt-1.5 text-xs text-crema-dim">{hint}</p>}
       {error && (
-        <p id={`${id}-error`} role="alert" className="mt-1.5 text-sm text-[#e0836c]">
+        <p id={`${id}-error`} role="alert" className="mt-1.5 text-sm text-errore">
           {error}
         </p>
       )}

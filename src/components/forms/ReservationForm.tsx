@@ -126,7 +126,7 @@ export function ReservationForm() {
             );
           })}
         </div>
-        {errors.date && <p role="alert" className="mt-1.5 text-sm text-[#e0836c]">{errors.date}</p>}
+        {errors.date && <p role="alert" className="mt-1.5 text-sm text-errore">{errors.date}</p>}
       </fieldset>
 
       <fieldset>
@@ -144,7 +144,7 @@ export function ReservationForm() {
             )}
           </motion.div>
         </AnimatePresence>
-        {errors.time && <p role="alert" className="mt-1.5 text-sm text-[#e0836c]">{errors.time}</p>}
+        {errors.time && <p role="alert" className="mt-1.5 text-sm text-errore">{errors.time}</p>}
       </fieldset>
 
       <fieldset>
@@ -180,7 +180,7 @@ export function ReservationForm() {
         <input name="company" tabIndex={-1} autoComplete="off" />
       </div>
 
-      {errors.form && <p role="alert" className="text-sm text-[#e0836c]">{errors.form}</p>}
+      {errors.form && <p role="alert" className="text-sm text-errore">{errors.form}</p>}
       <button type="submit" disabled={sending} className="btn btn-brass min-w-56 disabled:opacity-50">
         {sending ? dict.reservation.submitting : dict.reservation.submit}
       </button>
