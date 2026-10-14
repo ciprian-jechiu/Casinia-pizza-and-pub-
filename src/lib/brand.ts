@@ -3,7 +3,8 @@ export const BRAND_SAND = "#c8a078"; // textul „CASINIA”
 export const BRAND_OLIVE = "#828c46"; // frunza din „C”
 
 /**
- * Cuptor din cărămidă cu foc — foto: Michael Starkie, Unsplash (Unsplash License, utilizare comercială liberă).
- * https://unsplash.com/photos/a-fire-burning-inside-of-a-brick-oven-VAR7eup1bNA
+ * Fotografia hero: pizza pe lopată în gura cuptorului cu lemne (fișier furnizat de client, 1200×800).
+ * TODO: de confirmat dreptul de utilizare înainte de lansare.
  */
-export const OVEN_IMAGE = "https://images.unsplash.com/photo-1636581563748-dcb80f710950?auto=format&fit=crop&w=2400&q=80";
+export const OVEN_IMAGE = "/oven-pizza.jpg";
+export const OVEN_ASPECT = "1200 / 800";

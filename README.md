@@ -55,7 +55,7 @@ supabase/migrations/  schema bazei de date
 ## Imagini și culori
 
 - Culorile de brand sunt eșantionate din logo-ul original: textul „CASINIA” **#C8A078**, frunza **#828C46** (`src/lib/brand.ts`).
-- Fotografia cuptorului: Michael Starkie, [Unsplash](https://unsplash.com/photos/a-fire-burning-inside-of-a-brick-oven-VAR7eup1bNA) (Unsplash License, utilizare comercială liberă).
+- Fotografia din hero (`public/oven-pizza.jpg`): furnizată de client — **de confirmat dreptul de utilizare înainte de lansare**.
 
 ## De confirmat cu proprietarul
 

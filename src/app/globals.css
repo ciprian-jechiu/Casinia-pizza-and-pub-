@@ -196,8 +196,8 @@
 /* pâlpâirea focului din cuptor: două lumini calde care respiră decalat */
 .oven-flicker {
   background:
-    radial-gradient(38% 34% at 46% 52%, rgb(255 140 40 / 0.55), transparent 70%),
-    radial-gradient(26% 24% at 54% 46%, rgb(255 190 90 / 0.4), transparent 70%);
+    radial-gradient(34% 30% at 56% 30%, rgb(255 140 40 / 0.4), transparent 70%),
+    radial-gradient(22% 20% at 66% 24%, rgb(255 190 90 / 0.3), transparent 70%);
   animation: flicker 2.6s ease-in-out infinite alternate;
   will-change: opacity;
 }

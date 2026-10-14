@@ -8,7 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useI18n } from "../I18nProvider";
 import { Embers } from "./Embers";
 import { HERO_IMAGE, menuImage } from "@/lib/menu";
-import { BRAND_SAND, OVEN_IMAGE } from "@/lib/brand";
+import { BRAND_SAND, OVEN_ASPECT, OVEN_IMAGE } from "@/lib/brand";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -82,7 +82,7 @@ export function Hero() {
           // textul de jos coboară; semnătura rămâne pe loc, vizibilă, deasupra tuturor straturilor
           .to(q("[data-bottom]"), { y: 80, autoAlpha: 0, duration: 0.18 }, 0)
           .to(q("[data-sig]"), { scale: 0.88, duration: 0.5, ease: "power1.inOut" }, 0)
-          // camera intră în gura cuptorului
+          // camera se apropie de pizza din gura cuptorului
           .to(q("[data-oven-layer]"), { scale: 5.5, duration: 0.7, ease: "power2.in" }, 0.04)
           .to(q("[data-embers]"), { autoAlpha: 0, duration: 0.25 }, 0.3)
           // pizza apare din foc
@@ -114,23 +114,23 @@ export function Hero() {
       <div aria-hidden className="absolute inset-0 mix-blend-lighten">
         {/* poziționarea (translate) stă pe părinte, iar GSAP scalează doar copilul */}
         <div
-          className="absolute left-1/2 top-[50%] w-[150vw] -translate-x-1/2 -translate-y-[55%] md:top-[57%] md:w-[min(92vw,84svh)]"
-          style={{ aspectRatio: "1400 / 1057" }}
+          className="absolute left-1/2 top-[52%] w-[150vw] -translate-x-1/2 -translate-y-[50%] md:top-[60%] md:w-[min(90vw,104svh)]"
+          style={{ aspectRatio: OVEN_ASPECT }}
         >
-        <div data-oven-layer className="absolute inset-0 will-change-transform" style={{ transformOrigin: "50% 56%" }}>
+        <div data-oven-layer className="absolute inset-0 will-change-transform" style={{ transformOrigin: "62% 66%" }}>
           <Image
             src={OVEN_IMAGE}
             alt=""
             fill
             priority
-            sizes="(max-width: 768px) 150vw, 92vw"
+            sizes="(max-width: 768px) 150vw, 90vw"
             className="object-cover"
-            style={{ maskImage: "radial-gradient(ellipse 50% 50% at 50% 52%, black 58%, transparent 100%)" }}
+            style={{ maskImage: "radial-gradient(ellipse 50% 50% at 52% 50%, black 52%, transparent 100%)" }}
           />
           {/* pâlpâirea focului: o lumină caldă care respiră peste flăcări */}
           <div className="oven-flicker absolute inset-0 mix-blend-screen" />
           {/* gura cuptorului, de aici pornesc scânteile */}
-          <div ref={mouthRef} className="absolute left-[16%] top-[18%] h-[66%] w-[68%]" />
+          <div ref={mouthRef} className="absolute left-[30%] top-[10%] h-[40%] w-[52%]" />
         </div>
         </div>
       </div>
