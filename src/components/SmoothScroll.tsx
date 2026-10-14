@@ -17,7 +17,7 @@ export function SmoothScroll() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.95 });
+    lenis = new Lenis({ lerp: 0.075, wheelMultiplier: 0.9, touchMultiplier: 1.4 });
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis?.raf(time * 1000);
     gsap.ticker.add(tick);

@@ -32,7 +32,8 @@ export function PizzaStrip() {
           start: "top top",
           end: () => `+=${distance()}`,
           pin: true,
-          scrub: 0.6,
+          scrub: 1,
+          anticipatePin: 1,
           invalidateOnRefresh: true,
         },
       });

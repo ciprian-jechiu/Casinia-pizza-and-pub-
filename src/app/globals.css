@@ -12,12 +12,12 @@
   --color-notte: #15100c;      /* fundal: nuc închis */
   --color-legno: #231912;      /* suprafețe: lemn */
   --color-legno-2: #2e2219;    /* suprafețe ridicate */
-  --color-ottone: #c9a263;     /* alamă: accent principal */
-  --color-ottone-soft: #a8875a;
+  --color-ottone: #c8a078;     /* nisip-auriu: culoarea exactă a textului din logo */
+  --color-ottone-soft: #a6835f;
   --color-crema: #efe4d0;      /* text principal */
   --color-crema-dim: #b9ab95;  /* text secundar */
   --color-pomodoro: #a8452f;   /* accent italian, rar */
-  --color-basilico: #71875a;   /* accent italian, rar */
+  --color-basilico: #828c46;   /* verdele măsliniu al frunzei din logo */
   --color-linia: #3a2c21;      /* linii, borduri */
 
   --font-display: "Cormorant Variable", "Cormorant", Georgia, serif;
@@ -51,7 +51,7 @@
   body {
     min-height: 100dvh;
     background:
-      radial-gradient(120vw 80vh at 70% -10%, rgb(201 162 99 / 0.07), transparent 60%),
+      radial-gradient(120vw 80vh at 70% -10%, rgb(200 160 120 / 0.06), transparent 60%),
       var(--color-notte);
     overflow-x: clip;
   }
@@ -186,6 +186,24 @@
     outline: 2px solid var(--color-ottone);
     outline-offset: 3px;
   }
+}
+
+/* pâlpâirea focului din cuptor: două lumini calde care respiră decalat */
+.oven-flicker {
+  background:
+    radial-gradient(38% 34% at 46% 52%, rgb(255 140 40 / 0.55), transparent 70%),
+    radial-gradient(26% 24% at 54% 46%, rgb(255 190 90 / 0.4), transparent 70%);
+  animation: flicker 2.6s ease-in-out infinite alternate;
+  will-change: opacity;
+}
+@keyframes flicker {
+  0% { opacity: 0.35; }
+  18% { opacity: 0.7; }
+  33% { opacity: 0.45; }
+  52% { opacity: 0.85; }
+  70% { opacity: 0.5; }
+  86% { opacity: 0.75; }
+  100% { opacity: 0.4; }
 }
 
 @keyframes grain {

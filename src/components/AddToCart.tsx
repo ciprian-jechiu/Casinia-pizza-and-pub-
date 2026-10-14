@@ -44,7 +44,7 @@ export function AddToCart({
       height: "14px",
       borderRadius: "999px",
       background: "var(--color-ottone)",
-      boxShadow: "0 0 18px 4px rgb(201 162 99 / .55)",
+      boxShadow: "0 0 18px 4px rgb(200 160 120 / .55)",
       zIndex: "90",
       pointerEvents: "none",
     } satisfies Partial<CSSStyleDeclaration>);

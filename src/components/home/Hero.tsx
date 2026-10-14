@@ -8,44 +8,28 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useI18n } from "../I18nProvider";
 import { Embers } from "./Embers";
 import { HERO_IMAGE, menuImage } from "@/lib/menu";
+import { BRAND_SAND, OVEN_IMAGE } from "@/lib/brand";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
  * Momentul de efect al site-ului:
- * 1. la încărcare, semnătura „Casinia” se scrie în alamă, iar gura cuptorului se aprinde;
- * 2. la scroll, arcada cuptorului se deschide până umple ecranul și dezvăluie pizza.
+ * 1. la încărcare, cuptorul se aprinde din întuneric și semnătura „Casinia” se scrie în culoarea logo-ului;
+ * 2. la scroll, „camera” intră în gura cuptorului, iar pizza apare din foc.
+ *
+ * Semnătura stă mereu deasupra cuptorului (z-index) și, în repaus, cuptorul e așezat sub ea,
+ * deci nu o acoperă niciodată. Animația de scroll folosește doar transform și opacity (GPU),
+ * fără clip-path, ca să rămână fluidă.
  */
 export function Hero() {
   const { locale, dict } = useI18n();
   const root = useRef<HTMLElement>(null);
-  const archRef = useRef<HTMLDivElement>(null);
+  const mouthRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const el = root.current!;
     const q = gsap.utils.selector(el);
     const mm = gsap.matchMedia();
-
-    /** clip-path care decupează stratul cu imaginea exact pe forma arcadei */
-    const archClip = () => {
-      const a = archRef.current!.getBoundingClientRect();
-      const s = el.getBoundingClientRect();
-      const top = a.top - s.top;
-      const left = a.left - s.left;
-      const right = s.width - (left + a.width);
-      const bottom = s.height - (top + a.height);
-      const r = a.width / 2;
-      return `inset(${top}px ${right}px ${bottom}px ${left}px round ${r}px ${r}px 18px 18px)`;
-    };
-    const closedClip = () => {
-      const a = archRef.current!.getBoundingClientRect();
-      const s = el.getBoundingClientRect();
-      const top = a.top - s.top + a.height;
-      const left = a.left - s.left;
-      const right = s.width - (left + a.width);
-      const bottom = s.height - (a.top - s.top + a.height);
-      return `inset(${top}px ${right}px ${bottom}px ${left}px round ${a.width / 2}px ${a.width / 2}px 18px 18px)`;
-    };
 
     mm.add(
       { motion: "(prefers-reduced-motion: no-preference)", reduced: "(prefers-reduced-motion: reduce)" },
@@ -53,44 +37,40 @@ export function Hero() {
         const { reduced } = ctx.conditions as { motion: boolean; reduced: boolean };
 
         if (reduced) {
-          gsap.set(q("[data-media]"), { clipPath: archClip() });
           gsap.set(q(".sig-path"), { strokeDashoffset: 0, fillOpacity: 1 });
+          gsap.set(q("[data-oven-layer]"), { autoAlpha: 1 });
           return;
         }
 
         // ── 1. secvența de încărcare ─────────────────────────────
-        gsap.set(q("[data-media]"), { clipPath: closedClip() });
-        gsap.set(q("[data-media] img"), { scale: 1.35 });
+        gsap.set(q("[data-oven-layer]"), { autoAlpha: 0, scale: 1.08 });
         gsap.set(q("[data-word]"), { yPercent: 110 });
         gsap.set(q("[data-fade]"), { autoAlpha: 0, y: 16 });
 
         const intro = gsap.timeline({ defaults: { ease: "expo.out" }, paused: true });
         intro
-          .to(q(".sig-path"), { strokeDashoffset: 0, duration: 2.4, ease: "power2.inOut" }, 0)
-          .to(q(".sig-path"), { fillOpacity: 1, duration: 1.2, ease: "power1.out" }, 1.7)
-          .to(q("[data-media]"), { clipPath: archClip, duration: 1.6, ease: "power4.inOut" }, 0.6)
-          .to(q("[data-media] img"), { scale: 1.12, duration: 2.2 }, 0.6)
-          .to(q("[data-glow]"), { opacity: 1, duration: 1.6 }, 1.2)
-          .to(q("[data-word]"), { yPercent: 0, duration: 1.1, stagger: 0.035 }, 1.5)
-          .to(q("[data-fade]"), { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08 }, 1.9);
+          .to(q("[data-oven-layer]"), { autoAlpha: 1, scale: 1, duration: 2.6, ease: "power3.out" }, 0)
+          .to(q(".sig-path"), { strokeDashoffset: 0, duration: 2.4, ease: "power2.inOut" }, 0.2)
+          .to(q(".sig-path"), { fillOpacity: 1, duration: 1.2, ease: "power1.out" }, 1.9)
+          .to(q("[data-word]"), { yPercent: 0, duration: 1.2, stagger: 0.035 }, 1.4)
+          .to(q("[data-fade]"), { autoAlpha: 1, y: 0, duration: 1, stagger: 0.08 }, 1.8);
 
         // pornește după ce fontul semnăturii e încărcat, altfel conturul s-ar desena cu fontul de rezervă
         let cancelled = false;
-        Promise.race([
-          document.fonts.load('200px "Great Vibes"'),
-          new Promise((r) => setTimeout(r, 1500)),
-        ]).then(() => {
+        Promise.race([document.fonts.load('200px "Great Vibes"'), new Promise((r) => setTimeout(r, 1500))]).then(() => {
           if (!cancelled) intro.play();
         });
 
-        // ── 2. cuptorul se deschide la scroll ───────────────────
+        // ── 2. intrarea în cuptor la scroll ─────────────────────
         const scroll = gsap.timeline({
+          defaults: { ease: "none" },
           scrollTrigger: {
             trigger: el,
             start: "top top",
-            end: "+=140%",
+            end: "+=180%",
             pin: true,
-            scrub: 0.8,
+            anticipatePin: 1,
+            scrub: 1.2,
             invalidateOnRefresh: true,
             // dacă vizitatorul derulează înainte să se termine intro-ul, îl ducem la final
             onUpdate: (self) => {
@@ -99,14 +79,18 @@ export function Hero() {
           },
         });
         scroll
-          .to(q("[data-sig]"), { yPercent: -60, autoAlpha: 0, ease: "none", duration: 0.35 }, 0)
-          .to(q("[data-bottom]"), { y: 60, autoAlpha: 0, ease: "none", duration: 0.3 }, 0)
-          .fromTo(q("[data-media]"), { clipPath: archClip }, { clipPath: "inset(0px 0px 0px 0px round 0px 0px 0px 0px)", ease: "power2.inOut", duration: 0.7, immediateRender: false }, 0.05)
-          .to(q("[data-media] img"), { scale: 1, ease: "none", duration: 0.75 }, 0.05)
-          .to(q("[data-glow]"), { opacity: 0, duration: 0.3 }, 0.1)
-          .to(q("[data-shade]"), { opacity: 1, ease: "none", duration: 0.3 }, 0.55)
-          .fromTo(q("[data-oven] > *"), { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.06, duration: 0.25 }, 0.68)
-          .to({}, { duration: 0.15 });
+          // textul de jos coboară; semnătura rămâne pe loc, vizibilă, deasupra tuturor straturilor
+          .to(q("[data-bottom]"), { y: 80, autoAlpha: 0, duration: 0.18 }, 0)
+          .to(q("[data-sig]"), { scale: 0.88, duration: 0.5, ease: "power1.inOut" }, 0)
+          // camera intră în gura cuptorului
+          .to(q("[data-oven-layer]"), { scale: 5.5, duration: 0.7, ease: "power2.in" }, 0.04)
+          .to(q("[data-embers]"), { autoAlpha: 0, duration: 0.25 }, 0.3)
+          // pizza apare din foc
+          .fromTo(q("[data-pizza-layer]"), { autoAlpha: 0, scale: 1.3 }, { autoAlpha: 1, scale: 1, duration: 0.32, ease: "power2.out" }, 0.5)
+          .to(q("[data-oven-layer]"), { autoAlpha: 0, duration: 0.15 }, 0.66)
+          .to(q("[data-shade]"), { opacity: 1, duration: 0.16 }, 0.7)
+          .fromTo(q("[data-oven] > *"), { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.05, duration: 0.14, ease: "power2.out" }, 0.76)
+          .to({}, { duration: 0.1 });
 
         return () => {
           cancelled = true;
@@ -121,77 +105,82 @@ export function Hero() {
   const words = dict.hero.title.split(" ");
 
   return (
-    <section ref={root} className="relative h-[100svh] min-h-[600px] overflow-hidden" aria-labelledby="hero-title">
-      {/* gura cuptorului: strălucire caldă în spatele arcadei */}
-      <div
-        data-glow
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[52%] h-[70vh] w-[70vh] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0"
-        style={{ background: "radial-gradient(circle, rgb(222 120 50 / .28), rgb(201 162 99 / .08) 45%, transparent 70%)" }}
-      />
+    <section ref={root} className="relative h-[100svh] min-h-[620px] overflow-hidden bg-black" aria-labelledby="hero-title">
+      {/* ── cuptorul real ── */}
+      <div aria-hidden className="absolute inset-0">
+        {/* poziționarea (translate) stă pe părinte, iar GSAP scalează doar copilul */}
+        <div
+          className="absolute left-1/2 top-[50%] w-[150vw] -translate-x-1/2 -translate-y-[55%] md:top-[57%] md:w-[min(92vw,84svh)]"
+          style={{ aspectRatio: "1400 / 1057" }}
+        >
+        <div data-oven-layer className="absolute inset-0 will-change-transform" style={{ transformOrigin: "50% 56%" }}>
+          <Image
+            src={OVEN_IMAGE}
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 768px) 150vw, 92vw"
+            className="object-cover"
+            style={{ maskImage: "radial-gradient(ellipse 62% 60% at 50% 52%, black 62%, transparent 100%)" }}
+          />
+          {/* pâlpâirea focului: o lumină caldă care respiră peste flăcări */}
+          <div className="oven-flicker absolute inset-0 mix-blend-screen" />
+          {/* gura cuptorului, de aici pornesc scânteile */}
+          <div ref={mouthRef} className="absolute left-[16%] top-[18%] h-[66%] w-[68%]" />
+        </div>
+        </div>
+      </div>
 
-      {/* stratul cu imaginea, decupat pe arcadă */}
-      <div data-media className="absolute inset-0 overflow-hidden" style={{ clipPath: "inset(50% 50% 50% 50%)" }}>
-        {/* imaginea e mai înaltă decât ecranul ca să-l acopere complet; pizza (≈35% din lățime) cade pe centru */}
+      <div data-embers className="absolute inset-0">
+        <Embers originRef={mouthRef} />
+      </div>
+
+      {/* ── pizza care apare din foc ── */}
+      <div data-pizza-layer className="invisible absolute inset-0 overflow-hidden opacity-0">
         <div className="absolute left-1/2 top-[-15%] h-[130%] -translate-x-[35%]" style={{ aspectRatio: "1024 / 682" }}>
           <Image
             src={menuImage(HERO_IMAGE, 1600)}
             alt="Pizza Polo e Funghi, cu mozzarella, piept de pui, ciuperci și parmezan"
             fill
-            priority
             sizes="(max-width: 768px) 300vw, 160vw"
-            className="object-cover will-change-transform"
+            className="object-cover"
             style={{ maskImage: "linear-gradient(to right, transparent, black 8%, black 60%, transparent 69%)" }}
           />
         </div>
+        {/* umbră sus, ca semnătura să rămână lizibilă peste pizza */}
+        <div className="absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-black/85 via-black/45 to-transparent" />
         <div data-shade className="absolute inset-0 bg-gradient-to-r from-notte/95 via-notte/70 to-notte/10 opacity-0" />
       </div>
 
-      {/* poziția arcadei (invizibilă): de aici se calculează decupajul */}
-      <div
-        ref={archRef}
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[19svh] h-[38svh] w-[min(72vw,34svh)] -translate-x-1/2 md:top-[22svh] md:h-[52svh] md:w-[min(44vw,50svh)]"
-      />
-
-      <Embers originRef={archRef} />
-
-      {/* semnătura */}
-      <div data-sig className="pointer-events-none absolute inset-x-0 top-[9svh] z-10 flex justify-center px-4">
-        <svg viewBox="0 0 1000 300" className="w-[min(92vw,62rem)] overflow-visible" role="img" aria-label="Casinia">
-          <defs>
-            <linearGradient id="brass" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0" stopColor="#e9cf98" />
-              <stop offset=".45" stopColor="#c9a263" />
-              <stop offset="1" stopColor="#8a6a3c" />
-            </linearGradient>
-          </defs>
+      {/* ── semnătura: mereu deasupra ── */}
+      <div data-sig className="pointer-events-none absolute inset-x-0 top-[max(11svh,5.5rem)] z-30 flex justify-center px-4 will-change-transform">
+        <svg viewBox="0 70 1000 230" className="w-[min(86vw,34rem)] overflow-visible md:w-[min(56vw,40rem)]" role="img" aria-label="Casinia">
           <text
             className="sig-path"
             x="500"
-            y="215"
+            y="230"
             textAnchor="middle"
             fontFamily='"Great Vibes", cursive'
             fontSize="230"
-            fill="url(#brass)"
+            fill={BRAND_SAND}
             fillOpacity="0"
-            stroke="#d9b877"
-            strokeWidth="1.4"
+            stroke={BRAND_SAND}
+            strokeWidth="1.6"
             strokeDasharray="2600"
             strokeDashoffset="2600"
-            style={{ filter: "drop-shadow(0 6px 24px rgb(0 0 0 / .6))" }}
+            style={{ filter: "drop-shadow(0 4px 22px rgb(0 0 0 / .85))" }}
           >
             Casinia
           </text>
         </svg>
       </div>
 
-      {/* text + acțiuni */}
-      <div data-bottom className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-notte via-notte/80 to-transparent pb-[5svh] pt-24">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
+      {/* ── text + acțiuni ── */}
+      <div data-bottom className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/85 to-transparent pb-[4svh] pt-20">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p data-fade className="mb-3 text-sm text-ottone">{dict.hero.kicker}</p>
-            <h1 id="hero-title" className="text-[clamp(1.9rem,4.2vw,3.4rem)] leading-[1.05]">
+            <p data-fade className="mb-2 text-sm text-ottone">{dict.hero.kicker}</p>
+            <h1 id="hero-title" className="text-[clamp(1.75rem,3.6vw,3rem)] leading-[1.05]">
               {words.map((w, i) => (
                 <span key={i} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
                   <span data-word className="inline-block">
@@ -201,7 +190,7 @@ export function Hero() {
                 </span>
               ))}
             </h1>
-            <p data-fade className="mt-4 max-w-lg text-crema-dim">{dict.hero.lead}</p>
+            <p data-fade className="mt-3 max-w-lg text-sm text-crema-dim md:text-base">{dict.hero.lead}</p>
           </div>
           <div data-fade className="flex flex-wrap gap-3">
             <Link href={`/${locale}/meniu`} className="btn btn-brass">
@@ -214,9 +203,9 @@ export function Hero() {
         </div>
       </div>
 
-      {/* textul care apare după deschiderea cuptorului */}
-      <div className="pointer-events-none absolute inset-0 z-10 flex items-center">
-        <div data-oven className="mx-auto w-full max-w-7xl px-4 sm:px-8">
+      {/* ── textul care apare după intrarea în cuptor ── */}
+      <div className="pointer-events-none absolute inset-0 z-20 flex items-center">
+        <div data-oven className="mx-auto w-full max-w-7xl px-4 pt-[16svh] sm:px-8">
           <h2 className="max-w-xl text-[clamp(2.4rem,6vw,5rem)] leading-[0.98] opacity-0">{dict.oven.title}</h2>
           <p className="mt-6 max-w-md text-lg leading-relaxed text-crema/85 opacity-0">{dict.oven.body}</p>
         </div>

@@ -17,7 +17,7 @@ export function Visit({ dict }: { locale: Locale; dict: Dictionary }) {
             <div className="mt-2 flex gap-1 text-ottone" aria-hidden>
               <svg width="0" height="0" className="absolute">
                 <defs>
-                  <linearGradient id="star-partial"><stop offset="70%" stopColor="#c9a263" /><stop offset="70%" stopColor="transparent" /></linearGradient>
+                  <linearGradient id="star-partial"><stop offset="70%" stopColor="#c8a078" /><stop offset="70%" stopColor="transparent" /></linearGradient>
                 </defs>
               </svg>
               {Array.from({ length: 5 }).map((_, i) => (

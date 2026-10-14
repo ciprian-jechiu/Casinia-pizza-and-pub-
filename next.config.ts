@@ -4,7 +4,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   images: {
-    remotePatterns: [{ protocol: "https", hostname: "img.ps.me" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "img.ps.me" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+    ],
     formats: ["image/avif", "image/webp"],
   },
   turbopack: {
