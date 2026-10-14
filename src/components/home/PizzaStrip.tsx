@@ -55,6 +55,8 @@ export function PizzaStrip() {
   }, []);
 
   return (
+    // wrapper stabil pentru pin-spacer-ul GSAP (vezi Hero)
+    <div>
     <section ref={section} className="relative overflow-hidden py-20 lg:flex lg:h-[100svh] lg:flex-col lg:justify-center lg:py-0" aria-labelledby="pizza-title">
       <div className="mx-auto mb-10 flex w-full max-w-7xl items-end justify-between gap-6 px-4 sm:px-8">
         <div>
@@ -107,5 +109,6 @@ export function PizzaStrip() {
         ))}
       </ul>
     </section>
+    </div>
   );
 }

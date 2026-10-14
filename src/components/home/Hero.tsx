@@ -105,6 +105,9 @@ export function Hero() {
   const words = dict.hero.title.split(" ");
 
   return (
+    // Wrapper stabil deținut de React: GSAP pune „pin-spacer” între el și <section>,
+    // așa React nu mai găsește noduri mutate când navighezi între pagini (eroarea insertBefore).
+    <div>
     <section ref={root} className="relative h-[100svh] min-h-[620px] overflow-hidden bg-black" aria-labelledby="hero-title">
       {/* ── cuptorul real ── */}
       <div aria-hidden className="absolute inset-0">
@@ -211,5 +214,6 @@ export function Hero() {
         </div>
       </div>
     </section>
+    </div>
   );
 }
