@@ -4,13 +4,17 @@ Site-ul pizzeriei Casinia Pizza Pub din Stăuceni: prezentare, meniu complet, co
 
 ## Ce face
 
-- **Pagina principală** cu animația de intrare (semnătura „Casinia” se scrie în alamă, scântei de cuptor) și arcada cuptorului care se deschide la scroll, banda orizontală cu toate pizzele, burgeri și gustări, recenzii, program și hartă.
-- **Meniu** (`/ro/meniu`) cu toate produsele, prețurile și gramajele de pe meniul oficial, file de categorii lipite sus.
-- **Coș și comandă online** (`/ro/comanda`): ridicare sau livrare, „cât mai repede” sau la o oră anume, plata numerar sau card. Prețurile se recalculează pe server din meniu.
-- **Rezervări** (`/ro/rezervare`): zi, oră (doar intervalele din program, cu ora Chișinăului), număr de persoane.
-- **Panou admin** (`/ro/admin`, cu parolă): comenzi și rezervări, cu schimbare de status și reîmprospătare automată.
-- Notificări opționale pe **Telegram** pentru fiecare comandă și rezervare.
-- SEO: metadate pe limbă, `hreflang`, sitemap, robots, date structurate `Restaurant`.
+- **Pagina principală**, construită ca o plimbare prin restaurant, la scroll:
+  1. intrarea: fațada → prin ușă în sală, cu titlul „Pizza italiană autentică, în Stăuceni.”;
+  2. masa rezervată — „Riservato.”, cu butoanele de rezervare și meniu;
+  3. panoul crem de meniu: categoriile reale Casinia; la hover/tap se schimbă fotografia, iar orice preparat se adaugă în coș dintr-un click;
+  4. povestea: text mare cu majuscule și cuvinte scrise de mână peste rânduri;
+  5. evenimente private: cardul cu sala se transformă în cardul cu detalii și buton de contact;
+  6. recenzii: ratingul Google mare și un perete 3D înclinat de recenzii și preparate;
+  7. finalul: strada noaptea, văzută prin fereastră, cu adresa, programul și telefonul.
+- **Meniu** (`/ro/meniu`) cu toate produsele, prețurile și gramajele.
+- **Coș și comandă online** (`/ro/comanda`), **rezervări** (`/ro/rezervare`), **panou admin** (`/ro/admin`).
+- Notificări opționale pe **Telegram**; SEO pe fiecare limbă (ro, ru, en).
 
 ## Tehnologii
 
@@ -54,10 +58,15 @@ supabase/migrations/  schema bazei de date
 
 ## Imagini și culori
 
-- Culorile de brand sunt eșantionate din logo-ul original: textul „CASINIA” **#C8A078**, frunza **#828C46** (`src/lib/brand.ts`).
-- Fotografia din hero (`public/oven-pizza.jpg`): furnizată de client — **de confirmat dreptul de utilizare înainte de lansare**.
+- Paleta „Rosso e crema”: vișiniu `#2B0B10`, cremă `#F0E8DA`, coral `#E8A08A`; semnătura „Casinia” păstrează culoarea logo-ului `#C8A078`.
+- Fotografiile de atmosferă de pe pagina principală (fațadă, sală, masă, candelabre, masa lungă, strada) sunt din **Unsplash** (Unsplash License, utilizare comercială liberă) și **țin locul pozelor reale Casinia** — lista e în `src/lib/scenes.ts`.
+- `public/oven-pizza.jpg`: furnizată de client — de confirmat dreptul de utilizare.
+- Fotografiile preparatelor vin de pe meniul oficial Casinia (img.ps.me).
 
 ## De confirmat cu proprietarul
+
+- **Fotografii reale** pentru scenele pagina principală: intrarea, sala, o masă servită, sala seara, masa pentru grupuri, vederea de la fereastră.
+- **Recenziile** de pe peretele 3D sunt fragmente din recenziile publice de pe Google — de confirmat că proprietarul vrea să le afișeze.
 
 - **Programul de lucru**: valorile din `src/lib/site.ts` sunt provizorii (programul nu e public pe Google Maps).
 - **Livrarea**: zona, costul și comanda minimă (setată provizoriu la 150 lei).

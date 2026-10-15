@@ -47,4 +47,22 @@ export const site = {
   },
 } as const;
 
+/** Program compact: grupează zilele consecutive cu aceleași ore („Dum–Joi 10:00–22:00”). */
+export function hoursSummary(daysShort: readonly string[]) {
+  const order = [0, 1, 2, 3, 4, 5, 6];
+  const rows = order.map((d) => {
+    const h = site.hours.find((x) => x.day === d);
+    return { d, key: h ? `${h.open}–${h.close}` : "" };
+  });
+  const groups: { from: number; to: number; key: string }[] = [];
+  for (const r of rows) {
+    const g = groups[groups.length - 1];
+    if (g && g.key === r.key) g.to = r.d;
+    else groups.push({ from: r.d, to: r.d, key: r.key });
+  }
+  return groups
+    .filter((g) => g.key)
+    .map((g) => `${daysShort[g.from]}${g.to !== g.from ? `–${daysShort[g.to]}` : ""} ${g.key}`);
+}
+
 export type Site = typeof site;

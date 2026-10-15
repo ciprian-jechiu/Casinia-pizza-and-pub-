@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0b100c",
+  themeColor: "#2b0b10",
   colorScheme: "dark",
 };
 
@@ -69,7 +69,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
 
   return (
     <html lang={lang}>
-      <body className="grain">
+      <body>
         <I18nProvider locale={lang} dict={dict}>
           <SmoothScroll />
           <Header />
