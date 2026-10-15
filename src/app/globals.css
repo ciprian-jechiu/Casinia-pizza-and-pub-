@@ -198,8 +198,8 @@
   }
 }
 
-/* pe fațada de la început headerul stă ascuns; apare după ce „intri” */
-html[data-intro="facade"] .site-header {
+/* pe pagina principală headerul stă ascuns cât se deschid ușile; apare după ce „intri” */
+html:not([data-intro-done]):has(#intro) .site-header {
   opacity: 0;
   pointer-events: none;
 }

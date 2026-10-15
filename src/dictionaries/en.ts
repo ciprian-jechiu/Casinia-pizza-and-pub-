@@ -21,8 +21,8 @@ const en: Dictionary = {
     skip: "Skip to content",
   },
   home: {
-    enter: "Scroll to step inside",
-    headline: "Authentic Italian pizza in Stăuceni.",
+    enter: "Scroll",
+    headline: "The best dishes, gathered in one place.",
     reserve: "Book a table",
     viewMenu: "View the menu",
     menuTitle: "Explore our menu",

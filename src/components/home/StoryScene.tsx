@@ -30,17 +30,18 @@ export function StoryScene() {
       gsap
         .timeline({
           defaults: { ease: "none" },
-          scrollTrigger: { trigger: root.current, start: "top top", end: "+=170%", pin: true, anticipatePin: 1, scrub: 1, invalidateOnRefresh: true },
+          scrollTrigger: { id: "story", trigger: root.current, start: "top top", end: "+=170%", pin: true, anticipatePin: 1, scrub: 0.8, invalidateOnRefresh: true },
         })
         .fromTo(q("[data-bg]"), { scale: 1.15 }, { scale: 1, duration: 10 }, 0)
         .fromTo(q("[data-label]"), { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.8 }, 0.3)
-        .fromTo(q("[data-line]"), { yPercent: 105 }, { yPercent: 0, duration: 1, stagger: 0.45, ease: "power2.out" }, 0.6)
+        .fromTo(q("[data-line]"), { yPercent: 105, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1, stagger: 0.45, ease: "power2.out" }, 0.6)
         .fromTo(
           q("[data-script]"),
-          { clipPath: "inset(-20% 100% -20% 0)", autoAlpha: 1 },
-          { clipPath: "inset(-20% -10% -20% 0)", duration: 1.1, stagger: 0.9, ease: "power1.inOut" },
+          { clipPath: "inset(-20% 100% -20% 0)", autoAlpha: 0 },
+          { clipPath: "inset(-20% -10% -20% 0)", autoAlpha: 1, duration: 1.1, stagger: 0.9, ease: "power1.inOut" },
           1.8,
         )
+        .addLabel("s1", 4.4)
         .to(q("[data-text]"), { yPercent: -18, autoAlpha: 0, duration: 1.6, ease: "power1.in" }, 6.4)
         .to(q("[data-shade]"), { opacity: 0.25, duration: 2 }, 6.4)
         .to({}, { duration: 1.4 });

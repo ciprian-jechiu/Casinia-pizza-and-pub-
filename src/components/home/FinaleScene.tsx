@@ -26,7 +26,7 @@ export function FinaleScene() {
       gsap
         .timeline({
           defaults: { ease: "none" },
-          scrollTrigger: { trigger: root.current, start: "top top", end: "+=120%", pin: true, anticipatePin: 1, scrub: 1, invalidateOnRefresh: true },
+          scrollTrigger: { id: "finale", trigger: root.current, start: "top top", end: "+=120%", pin: true, anticipatePin: 1, scrub: 0.8, invalidateOnRefresh: true },
         })
         .fromTo(q("[data-window]"), { scale: 0.42, borderRadius: 6 }, { scale: 1, borderRadius: 0, duration: 2.4, ease: "power2.inOut" }, 0)
         .fromTo(q("[data-night]"), { opacity: 0.85 }, { opacity: 0.2, duration: 2.2 }, 0.2)

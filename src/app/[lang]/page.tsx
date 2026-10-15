@@ -5,6 +5,7 @@ import { StoryScene } from "@/components/home/StoryScene";
 import { EventsScene } from "@/components/home/EventsScene";
 import { ReviewsScene } from "@/components/home/ReviewsScene";
 import { FinaleScene } from "@/components/home/FinaleScene";
+import { StepScroll } from "@/components/home/StepScroll";
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
@@ -16,6 +17,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
       <EventsScene />
       <ReviewsScene />
       <FinaleScene />
+      <StepScroll />
     </>
   );
 }

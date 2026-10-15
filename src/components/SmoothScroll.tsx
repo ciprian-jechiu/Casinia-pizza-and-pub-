@@ -11,13 +11,22 @@ gsap.registerPlugin(ScrollTrigger);
 let lenis: Lenis | null = null;
 export const getLenis = () => lenis;
 
+/**
+ * Modul „pas cu pas” (pagina principală): Lenis ignoră rotița/touch-ul,
+ * iar StepScroll mută pagina dintr-o oprire în alta.
+ */
+let stepMode = false;
+export const setStepMode = (on: boolean) => {
+  stepMode = on;
+};
+
 /** Lenis pentru scroll fin, sincronizat cu ScrollTrigger. Dezactivat la „reduce motion”. */
 export function SmoothScroll() {
   const pathname = usePathname();
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    lenis = new Lenis({ lerp: 0.075, wheelMultiplier: 0.9, touchMultiplier: 1.4 });
+    lenis = new Lenis({ lerp: 0.075, wheelMultiplier: 0.9, touchMultiplier: 1.4, virtualScroll: () => !stepMode });
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis?.raf(time * 1000);
     gsap.ticker.add(tick);

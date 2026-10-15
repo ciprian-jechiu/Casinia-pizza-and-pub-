@@ -19,8 +19,8 @@ const ro = {
     skip: "Sari la conținut",
   },
   home: {
-    enter: "Derulează ca să intri",
-    headline: "Pizza italiană autentică, în Stăuceni.",
+    enter: "Derulează",
+    headline: "Cele mai bune bucate, adunate într-un singur loc.",
     reserve: "Rezervă o masă",
     viewMenu: "Vezi meniul",
     menuTitle: "Explorează meniul",

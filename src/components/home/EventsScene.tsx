@@ -29,12 +29,13 @@ export function EventsScene() {
         .timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
+            id: "events",
             trigger: root.current,
             start: "top top",
             end: "+=140%",
             pin: true,
             anticipatePin: 1,
-            scrub: 1,
+            scrub: 0.8,
             invalidateOnRefresh: true,
             onUpdate: (self) => setStep(self.progress > 0.5 ? 1 : 0),
           },
@@ -42,6 +43,7 @@ export function EventsScene() {
         .fromTo(q("[data-card]"), { scale: 0.9, y: 40 }, { scale: 1, y: 0, duration: 1.2, ease: "power2.out" }, 0)
         .fromTo(q("[data-photo] img"), { scale: 1.15 }, { scale: 1, duration: 3 }, 0)
         .fromTo(q("[data-detail]"), { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.2, ease: "power2.inOut" }, 1.6)
+        .addLabel("s1", 1.3)
         .fromTo(q("[data-detail-item]"), { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, stagger: 0.12 }, 2.4)
         .to({}, { duration: 0.8 });
       stRef.current = tl.scrollTrigger ?? null;
