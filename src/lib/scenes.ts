@@ -9,7 +9,7 @@ const u = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&f
 
 export const SCENE = {
   /** uși de sticlă luminate, noaptea — punctul de plecare al „intrării” */
-  facade: { src: u("1652196140815-99d54d124dab"), alt: "Intrarea în restaurant, seara", door: "48% 50%", seam: 48 },
+  facade: { src: u("1652196140815-99d54d124dab"), alt: "Intrarea în restaurant, seara", door: "48% 50%" },
   /** sala cu fețe de masă albe și banchete roșii */
   interior: { src: u("1543520788-f17401c3a3bd"), alt: "Sala de mese", table: "62% 78%" },
   /** masa rezervată: pizza, paste, lumânare, vin */

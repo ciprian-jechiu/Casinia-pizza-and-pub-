@@ -13,33 +13,10 @@ import { CATEGORY_IMAGE, SCENE } from "@/lib/scenes";
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * Scena de deschidere: la încărcare ușile restaurantului se deschid și intri în sală;
- * apoi, la scroll: titlul → masa rezervată („Riservato.”) → panoul crem cu meniul.
+ * Scena de deschidere, fixată la scroll:
+ * fațada → prin ușă în sală (titlul) → masa rezervată („Riservato.”) → panoul crem cu meniul.
  * Totul se mișcă doar din transform/opacity, legat de scroll (scrub).
  */
-/** Poziția liniei dintre cele două uși în fotografia fațadei (procent din lățime). */
-const SEAM = SCENE.facade.seam;
-
-function Door({ side }: { side: "left" | "right" }) {
-  const left = side === "left";
-  const w = left ? SEAM : 100 - SEAM;
-  return (
-    <div
-      data-door={side}
-      className={`absolute inset-y-0 overflow-hidden will-change-transform ${left ? "left-0" : "right-0"}`}
-      style={{ width: `${w}%`, transformOrigin: left ? "left center" : "right center", backfaceVisibility: "hidden" }}
-    >
-      <div className={`absolute inset-y-0 ${left ? "left-0" : "right-0"}`} style={{ width: `${(100 / w) * 100}%` }}>
-        <Image src={SCENE.facade.src} alt="" fill priority sizes="100vw" className="object-cover" style={{ objectPosition: SCENE.facade.door }} />
-      </div>
-      {/* umbra care se adâncește pe măsură ce canatul se rotește */}
-      <div data-door-shade className="absolute inset-0 bg-black opacity-0" />
-      {/* muchia canatului dinspre mijloc */}
-      <div className={`absolute inset-y-0 w-px bg-black/60 ${left ? "right-0" : "left-0"}`} />
-    </div>
-  );
-}
-
 export function IntroScene() {
   const { locale, dict } = useI18n();
   const root = useRef<HTMLElement>(null);
@@ -61,8 +38,7 @@ export function IntroScene() {
         const { desktop, reduced } = ctx.conditions as Record<string, boolean>;
 
         if (reduced) {
-          html.dataset.introDone = "";
-          gsap.set(q("[data-black], [data-doors], [data-l='interior'], [data-hint], [data-headline]"), { autoAlpha: 0 });
+          gsap.set(q("[data-l='facade'], [data-l='interior'], [data-hint], [data-headline]"), { autoAlpha: 0 });
           gsap.set(q("[data-l='table'], [data-riservato]"), { autoAlpha: 1 });
           gsap.set(q("[data-panel]"), { xPercent: 0, yPercent: 0, autoAlpha: 1 });
           if (desktop) gsap.set(q("[data-media]"), { right: "44%" });
@@ -72,44 +48,25 @@ export function IntroScene() {
         html.dataset.intro = "facade";
         let panelWasOpen = false;
 
-        // ── la încărcare: fațada iese din întuneric, ușile se deschid, intri în sală ──
-        const doors = gsap.timeline({
-          delay: 0.2,
-          onComplete: () => {
-            html.dataset.intro = "";
-            html.dataset.introDone = "";
-            gsap.set(q("[data-doors]"), { autoAlpha: 0 });
-            gsap.fromTo(q("[data-hint-inner]"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: "power2.out" });
-          },
-        });
-        doors
-          .fromTo(q("[data-black]"), { autoAlpha: 1 }, { autoAlpha: 0, duration: 1.4, ease: "power1.out" }, 0)
-          .fromTo(q("[data-doors]"), { scale: 1.06 }, { scale: 1, duration: 1.6, ease: "power2.out" }, 0)
-          .to(q("[data-doors]"), { scale: 1.14, duration: 1.1, ease: "power1.inOut" }, 1.7)
-          .to(q("[data-door='left']"), { rotationY: -108, duration: 1.9, ease: "power3.inOut" }, 2.5)
-          .to(q("[data-door='right']"), { rotationY: 108, duration: 1.9, ease: "power3.inOut" }, 2.5)
-          .to(q("[data-door-shade]"), { opacity: 0.75, duration: 1.6, ease: "power1.in" }, 2.6)
-          .fromTo(q("[data-l='interior']"), { scale: 1.28 }, { scale: 1, duration: 2.6, ease: "power2.out" }, 2.6)
-          .to(q("[data-doors]"), { autoAlpha: 0, duration: 0.5 }, 3.9);
+        // ── la încărcare: fațada iese din întuneric ──
+        gsap.fromTo(q("[data-facade-inner]"), { scale: 1.12, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 2, ease: "power2.out" });
+        gsap.fromTo(q("[data-hint-inner]"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 1, delay: 1.1, ease: "power2.out" });
 
-        // la primul scroll în timpul deschiderii, animația se termină repede
-        const skip = () => doors.progress() < 1 && doors.timeScale(4);
-        window.addEventListener("casinia:skip-intro", skip);
-
-        // ── povestea la scroll: titlul → masa („Riservato.”) → panoul de meniu ──
+        // ── la scroll: prin ușă în sală → titlul → masa („Riservato.”) → panoul de meniu ──
         const tl = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
             id: "intro",
             trigger: el,
             start: "top top",
-            end: "+=330%",
+            end: "+=430%",
             pin: true,
             anticipatePin: 1,
             scrub: 0.8,
             invalidateOnRefresh: true,
             onUpdate: (self) => {
-              const open = self.progress > 0.78;
+              html.dataset.intro = self.progress < 0.13 ? "facade" : "";
+              const open = self.progress > 0.8;
               html.dataset.panel = open ? "open" : "";
               // la derularea înapoi, panoul se închide și imaginea categoriei dispare
               if (!open && panelWasOpen) setActive(null);
@@ -119,45 +76,46 @@ export function IntroScene() {
               html.dataset.panel = "";
             },
             onEnterBack: (self) => {
-              html.dataset.panel = self.progress > 0.78 ? "open" : "";
+              html.dataset.panel = self.progress > 0.8 ? "open" : "";
             },
           },
         });
 
         tl.addLabel("s0", 0)
-          // 1. titlul
+          // 1. prin ușă, în sală, cu titlul
           .to(q("[data-hint]"), { autoAlpha: 0, duration: 0.4 }, 0)
+          .to(q("[data-l='facade']"), { scale: 3.4, duration: 2.3, ease: "power2.in" }, 0)
+          .to(q("[data-l='facade']"), { autoAlpha: 0, duration: 0.6 }, 1.75)
+          .fromTo(q("[data-l='interior']"), { autoAlpha: 0, scale: 1.4 }, { autoAlpha: 1, scale: 1, duration: 2.2, ease: "power2.out" }, 1.55)
           .fromTo(
             q("[data-hw]"),
             { yPercent: 110, autoAlpha: 0, filter: "blur(6px)" },
             { yPercent: 0, autoAlpha: 1, filter: "blur(0px)", duration: 0.9, stagger: 0.1, ease: "power2.out" },
-            0.2,
+            2.7,
           )
-          .addLabel("s1", 2)
+          .addLabel("s1", 4.4)
           // 2. spre masă
-          .to(q("[data-headline]"), { autoAlpha: 0, y: -30, duration: 0.6 }, 2.2)
-          .to(q("[data-l='interior']"), { scale: 1.7, duration: 1.8, ease: "power2.in" }, 2.2)
-          .fromTo(q("[data-l='table']"), { autoAlpha: 0, scale: 1.3 }, { autoAlpha: 1, scale: 1, duration: 1.8, ease: "power2.out" }, 3.1)
-          .fromTo(q("[data-riservato] > *"), { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.12, ease: "power2.out" }, 4)
-          .addLabel("s2", 5.2)
+          .to(q("[data-headline]"), { autoAlpha: 0, y: -30, duration: 0.6 }, 4.6)
+          .to(q("[data-l='interior']"), { scale: 1.7, duration: 1.8, ease: "power2.in" }, 4.6)
+          .fromTo(q("[data-l='table']"), { autoAlpha: 0, scale: 1.3 }, { autoAlpha: 1, scale: 1, duration: 1.8, ease: "power2.out" }, 5.5)
+          .fromTo(q("[data-riservato] > *"), { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.12, ease: "power2.out" }, 6.4)
+          .addLabel("s2", 7.6)
           // 3. panoul de meniu
-          .to(q("[data-riservato]"), { autoAlpha: 0, x: -30, duration: 0.5 }, 5.4)
+          .to(q("[data-riservato]"), { autoAlpha: 0, x: -30, duration: 0.5 }, 8.1)
           .fromTo(
             q("[data-panel]"),
             desktop ? { xPercent: 100, autoAlpha: 1 } : { yPercent: 100, autoAlpha: 1 },
             { xPercent: 0, yPercent: 0, autoAlpha: 1, duration: 1.3, ease: "power3.out" },
-            5.5,
+            8.2,
           )
-          .fromTo(q("[data-panel-item]"), { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 6.1)
-          .to({}, { duration: 0.5 })
+          .fromTo(q("[data-panel-item]"), { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, stagger: 0.08, ease: "power2.out" }, 8.8)
+          .to({}, { duration: 0.6 })
           .addLabel("s3");
 
-        if (desktop) tl.fromTo(q("[data-media]"), { right: "0%" }, { right: "44%", duration: 1.3, ease: "power3.out" }, 5.5);
+        if (desktop) tl.fromTo(q("[data-media]"), { right: "0%" }, { right: "44%", duration: 1.3, ease: "power3.out" }, 8.2);
 
         return () => {
-          window.removeEventListener("casinia:skip-intro", skip);
           delete html.dataset.intro;
-          delete html.dataset.introDone;
           delete html.dataset.panel;
         };
       },
@@ -173,9 +131,13 @@ export function IntroScene() {
       <section ref={root} id="intro" data-header-tone="dark" className="relative h-[100svh] min-h-[560px] overflow-hidden bg-notte" aria-labelledby="intro-title">
         {/* ── imagini ── */}
         <div data-media className="absolute inset-y-0 left-0 right-0 overflow-hidden">
-          {/* sala, vizibilă din spatele ușilor */}
-          <div data-l="interior" className="absolute inset-0 will-change-transform" style={{ transformOrigin: SCENE.interior.table }}>
-            <Image src={SCENE.interior.src} alt={SCENE.interior.alt} fill priority sizes="100vw" className="object-cover" />
+          <div data-l="facade" className="absolute inset-0 will-change-transform" style={{ transformOrigin: SCENE.facade.door }}>
+            <div data-facade-inner className="absolute inset-0">
+              <Image src={SCENE.facade.src} alt={SCENE.facade.alt} fill priority sizes="100vw" className="object-cover" style={{ objectPosition: SCENE.facade.door }} />
+            </div>
+          </div>
+          <div data-l="interior" className="invisible absolute inset-0 opacity-0 will-change-transform" style={{ transformOrigin: SCENE.interior.table }}>
+            <Image src={SCENE.interior.src} alt={SCENE.interior.alt} fill sizes="100vw" className="object-cover" />
           </div>
           <div data-l="table" className="invisible absolute inset-0 opacity-0 will-change-transform">
             <Image src={SCENE.table.src} alt={SCENE.table.alt} fill sizes="100vw" className="object-cover" />
@@ -193,12 +155,6 @@ export function IntroScene() {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/45" />
         </div>
 
-        {/* ── ușile: fotografia fațadei tăiată pe linia dintre uși, fiecare canat se rotește pe balamaua lui ── */}
-        <div data-doors className="absolute inset-0 z-[5] will-change-transform" style={{ perspective: "1800px", transformOrigin: `${SEAM}% 50%` }} aria-hidden>
-          <Door side="left" />
-          <Door side="right" />
-        </div>
-        <div data-black className="pointer-events-none absolute inset-0 z-[6] bg-black" aria-hidden />
 
         {/* ── îndemnul de scroll ── */}
         <div data-hint className="absolute inset-x-0 bottom-8 z-10 text-crema">

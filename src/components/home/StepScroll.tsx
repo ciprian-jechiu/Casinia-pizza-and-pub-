@@ -63,11 +63,6 @@ export function StepScroll() {
     const go = (dir: number) => {
       const lenis = getLenis();
       if (!lenis || animating) return;
-      // în timpul deschiderii ușilor, primul gest doar grăbește animația
-      if (document.documentElement.dataset.intro === "facade") {
-        window.dispatchEvent(new Event("casinia:skip-intro"));
-        return;
-      }
       const stops = computeStops();
       const cur = lenis.scroll;
       const target = dir > 0 ? stops.find((s) => s > cur + 8) : [...stops].reverse().find((s) => s < cur - 8);
