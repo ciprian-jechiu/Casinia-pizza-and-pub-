@@ -11,22 +11,41 @@ gsap.registerPlugin(ScrollTrigger);
 let lenis: Lenis | null = null;
 export const getLenis = () => lenis;
 
-/**
- * Modul „pas cu pas” (pagina principală): Lenis ignoră rotița/touch-ul,
- * iar StepScroll mută pagina dintr-o oprire în alta.
- */
-let stepMode = false;
-export const setStepMode = (on: boolean) => {
-  stepMode = on;
-};
+/** Cât poate „fugi” ținta scroll-ului înaintea poziției afișate (fracțiune din înălțimea ecranului). */
+const MAX_LEAD = 0.2;
+/** Cel mai mare pas acceptat dintr-un singur eveniment de rotiță/trackpad (px). */
+const MAX_DELTA = 110;
 
-/** Lenis pentru scroll fin, sincronizat cu ScrollTrigger. Dezactivat la „reduce motion”. */
+/**
+ * Scroll fin (Lenis), sincronizat cu ScrollTrigger, cu viteză limitată:
+ * un scroll puternic nu mai aruncă pagina departe — mișcarea rămâne lină și continuă,
+ * iar ținta nu poate depăși poziția curentă cu mai mult de ~o cincime de ecran
+ * (viteza maximă ≈ un ecran pe secundă, oricât de tare ai da).
+ * Dezactivat la „reduce motion”.
+ */
 export function SmoothScroll() {
   const pathname = usePathname();
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    lenis = new Lenis({ lerp: 0.075, wheelMultiplier: 0.9, touchMultiplier: 1.4, virtualScroll: () => !stepMode });
+    lenis = new Lenis({
+      lerp: 0.08,
+      wheelMultiplier: 0.85,
+      touchMultiplier: 1.2,
+      virtualScroll: (data) => {
+        const l = lenis;
+        if (!l || !data.event.type.includes("wheel")) return true;
+        const dir = Math.sign(data.deltaY);
+        // limitează fiecare impuls
+        if (Math.abs(data.deltaY) > MAX_DELTA) data.deltaY = dir * MAX_DELTA;
+        // dacă ținta a luat-o deja mult înainte în aceeași direcție, impulsurile noi sunt ignorate
+        const lead = l.targetScroll - l.animatedScroll;
+        if (dir && Math.sign(lead) === dir && Math.abs(lead) > window.innerHeight * MAX_LEAD) {
+          data.deltaY = dir * 0.01; // aproape zero, dar Lenis tot blochează scroll-ul nativ
+        }
+        return true;
+      },
+    });
     lenis.on("scroll", ScrollTrigger.update);
     const tick = (time: number) => lenis?.raf(time * 1000);
     gsap.ticker.add(tick);
