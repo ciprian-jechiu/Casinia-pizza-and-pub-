@@ -10,7 +10,7 @@ export function Footer({ locale, dict }: { locale: Locale; dict: Dictionary }) {
     <footer className="border-t border-linia">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <Logo />
+          <Logo height={84} />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-crema-dim">
             {site.address.building}, {site.address.street}, {site.address.city}
           </p>

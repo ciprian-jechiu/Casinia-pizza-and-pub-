@@ -6,9 +6,9 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useI18n } from "../I18nProvider";
-import { useCart } from "@/store/cart";
-import { categories, itemsByCategory, type CategoryId } from "@/lib/menu";
+import { categories, isBanner, itemsByCategory, menu, menuImage, type CategoryId } from "@/lib/menu";
 import { CATEGORY_IMAGE, SCENE } from "@/lib/scenes";
+import { Logo } from "../Logo";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,6 +21,8 @@ export function IntroScene() {
   const { locale, dict } = useI18n();
   const root = useRef<HTMLElement>(null);
   const [active, setActive] = useState<CategoryId | null>(null);
+  // preparatul peste care e mouse-ul în panou: poza lui apare în stânga
+  const [preview, setPreview] = useState<string | null>(null);
 
   useLayoutEffect(() => {
     const el = root.current!;
@@ -38,7 +40,7 @@ export function IntroScene() {
         const { desktop, reduced } = ctx.conditions as Record<string, boolean>;
 
         if (reduced) {
-          gsap.set(q("[data-l='facade'], [data-l='interior'], [data-hint], [data-headline]"), { autoAlpha: 0 });
+          gsap.set(q("[data-l='facade'], [data-l='interior'], [data-hint], [data-headline], [data-biglogo]"), { autoAlpha: 0 });
           gsap.set(q("[data-l='table'], [data-riservato]"), { autoAlpha: 1 });
           gsap.set(q("[data-panel]"), { xPercent: 0, yPercent: 0, autoAlpha: 1 });
           if (desktop) gsap.set(q("[data-media]"), { right: "44%" });
@@ -50,7 +52,8 @@ export function IntroScene() {
 
         // ── la încărcare: fațada iese din întuneric ──
         gsap.fromTo(q("[data-facade-inner]"), { scale: 1.12, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 2, ease: "power2.out" });
-        gsap.fromTo(q("[data-hint-inner]"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 1, delay: 1.1, ease: "power2.out" });
+        gsap.fromTo(q("[data-biglogo-inner]"), { autoAlpha: 0, y: 24, scale: 0.94 }, { autoAlpha: 1, y: 0, scale: 1, duration: 1.6, delay: 0.5, ease: "power3.out" });
+        gsap.fromTo(q("[data-hint-inner]"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 1, delay: 1.4, ease: "power2.out" });
 
         // ── la scroll: prin ușă în sală → titlul → masa („Riservato.”) → panoul de meniu ──
         const tl = gsap.timeline({
@@ -84,6 +87,7 @@ export function IntroScene() {
         tl.addLabel("s0", 0)
           // 1. prin ușă, în sală, cu titlul
           .to(q("[data-hint]"), { autoAlpha: 0, duration: 0.4 }, 0)
+          .to(q("[data-biglogo]"), { autoAlpha: 0, scale: 1.25, y: -40, duration: 0.9, ease: "power1.in" }, 0)
           .to(q("[data-l='facade']"), { scale: 3.4, duration: 2.3, ease: "power2.in" }, 0)
           .to(q("[data-l='facade']"), { autoAlpha: 0, duration: 0.6 }, 1.75)
           .fromTo(q("[data-l='interior']"), { autoAlpha: 0, scale: 1.4 }, { autoAlpha: 1, scale: 1, duration: 2.2, ease: "power2.out" }, 1.55)
@@ -152,9 +156,37 @@ export function IntroScene() {
               <Image src={CATEGORY_IMAGE[c.id].src} alt={CATEGORY_IMAGE[c.id].alt} fill sizes="(min-width: 1024px) 56vw, 100vw" className="object-cover" />
             </div>
           ))}
+          {/* poza preparatului peste care e mouse-ul */}
+          {menu
+            .filter((m) => m.image)
+            .map((m) => (
+              <div
+                key={m.id}
+                aria-hidden
+                className={`absolute inset-0 bg-black transition-opacity duration-500 ${preview === m.id ? "opacity-100" : "pointer-events-none opacity-0"}`}
+              >
+                {preview === m.id && (
+                  <Image
+                    src={menuImage(m.image!, 1600)}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 56vw, 100vw"
+                    className={isBanner(m) ? "object-contain" : "object-cover"}
+                  />
+                )}
+              </div>
+            ))}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/45" />
         </div>
 
+
+        {/* ── logo-ul mare, pe fațadă ── */}
+        <div data-biglogo className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center" aria-hidden>
+          <div data-biglogo-inner className="relative opacity-0">
+            <div className="absolute -inset-[35%] rounded-full bg-[radial-gradient(closest-side,rgb(0_0_0/0.7),transparent)]" />
+            <Logo height={260} priority className="relative h-[clamp(150px,30svh,300px)]! w-auto! drop-shadow-[0_6px_30px_rgb(0_0_0/0.6)]" />
+          </div>
+        </div>
 
         {/* ── îndemnul de scroll ── */}
         <div data-hint className="absolute inset-x-0 bottom-8 z-10 text-crema">
@@ -180,7 +212,7 @@ export function IntroScene() {
 
         {/* ── Riservato. ── */}
         <div data-riservato className="absolute left-[6vw] top-[28svh] z-10 max-w-xl text-crema">
-          <p className="font-display text-[clamp(3.4rem,9vw,8rem)] italic leading-[0.95] tracking-[-0.03em] opacity-0">Riservato.</p>
+          <p className="font-display text-[clamp(3rem,8vw,7.5rem)] italic leading-[0.95] tracking-[-0.03em] opacity-0">{dict.home.riservato}</p>
           <div className="mt-6 flex flex-wrap items-center gap-5 opacity-0">
             <Link href={`/${locale}/rezervare`} className="btn btn-brass min-h-10 px-5 text-[0.8rem]">
               {dict.home.reserve}
@@ -192,23 +224,22 @@ export function IntroScene() {
         </div>
 
         {/* ── panoul de meniu ── */}
-        <MenuPanel active={active} setActive={setActive} />
+        <MenuPanel active={active} setActive={setActive} setPreview={setPreview} />
       </section>
     </div>
   );
 }
 
-function MenuPanel({ active, setActive }: { active: CategoryId | null; setActive: (c: CategoryId) => void }) {
+function MenuPanel({
+  active,
+  setActive,
+  setPreview,
+}: {
+  active: CategoryId | null;
+  setActive: (c: CategoryId) => void;
+  setPreview: (id: string | null) => void;
+}) {
   const { locale, dict } = useI18n();
-  const add = useCart((s) => s.add);
-  const [added, setAdded] = useState<string | null>(null);
-
-  const onAdd = (id: string) => {
-    add(id);
-    setAdded(id);
-    window.setTimeout(() => setAdded((v) => (v === id ? null : v)), 1400);
-  };
-
   return (
     <aside
       data-panel
@@ -255,16 +286,17 @@ function MenuPanel({ active, setActive }: { active: CategoryId | null; setActive
                     <p className="pb-2 pl-12 pt-3 text-[0.8rem] leading-[1.9] text-inchiostro-dim">
                       {items.map((it, i) => (
                         <span key={it.id}>
-                          <button
-                            type="button"
+                          <Link
+                            href={`/${locale}/meniu/${it.id}`}
                             tabIndex={open ? 0 : -1}
-                            onClick={() => onAdd(it.id)}
-                            className="rounded-sm text-inchiostro underline-offset-4 hover:underline"
-                            aria-label={`${dict.menuPage.add}: ${it.name[locale]}`}
+                            onMouseEnter={() => setPreview(it.image ? it.id : null)}
+                            onFocus={() => setPreview(it.image ? it.id : null)}
+                            onMouseLeave={() => setPreview(null)}
+                            className="rounded-sm text-inchiostro underline-offset-4 hover:text-rosso hover:underline"
                           >
                             {it.name[locale]}
-                          </button>{" "}
-                          <span className="text-rosso">{added === it.id ? "✓" : it.price}</span>
+                          </Link>{" "}
+                          <span className="text-rosso">{it.price}</span>
                           {i < items.length - 1 && <span aria-hidden> · </span>}
                         </span>
                       ))}
@@ -276,7 +308,7 @@ function MenuPanel({ active, setActive }: { active: CategoryId | null; setActive
           })}
         </ul>
         <p data-panel-item className="mt-8 text-xs text-inchiostro-dim" aria-live="polite">
-          {added ? dict.home.added : dict.home.menuHint}
+          {dict.home.menuHint}
         </p>
       </div>
     </aside>

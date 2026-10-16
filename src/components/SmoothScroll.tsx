@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePathname } from "next/navigation";
+import { clearRestore, peekRestore } from "@/lib/cookies";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -58,8 +59,38 @@ export function SmoothScroll() {
   }, []);
 
   useEffect(() => {
-    lenis?.scrollTo(0, { immediate: true });
-    requestAnimationFrame(() => ScrollTrigger.refresh());
+    // după schimbarea limbii rămânem în același loc; altfel pagina nouă pornește de sus
+    const y = peekRestore(pathname);
+    const go = (top: number) => {
+      if (lenis) lenis.scrollTo(top, { immediate: true, force: true });
+      else window.scrollTo(0, top);
+      ScrollTrigger.update();
+    };
+    go(0);
+    let t = 0;
+    const raf = requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+      const hashEl = y === null && window.location.hash ? document.getElementById(decodeURIComponent(window.location.hash.slice(1))) : null;
+      if (hashEl) {
+        // link cu ancoră (ex. /ro/meniu#pizza sau /ro#poveste)
+        t = window.setTimeout(() => {
+          ScrollTrigger.refresh();
+          go(Math.max(0, hashEl.getBoundingClientRect().top + window.scrollY - 150));
+        }, 120);
+      } else if (y !== null) {
+        go(y);
+        // a doua trecere, după ce scenele fixate și-au calculat înălțimile
+        t = window.setTimeout(() => {
+          ScrollTrigger.refresh();
+          go(y);
+          clearRestore();
+        }, 350);
+      }
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t);
+    };
   }, [pathname]);
 
   return null;

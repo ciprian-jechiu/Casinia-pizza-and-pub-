@@ -9,8 +9,9 @@ import { Logo } from "./Logo";
 import { cartTotals, useCart } from "@/store/cart";
 import { localeLabels, locales, type Locale } from "@/lib/i18n";
 import { useHydrated } from "@/lib/useClient";
-import { rememberLocale } from "@/lib/cookies";
+import { switchLocale } from "@/lib/cookies";
 import { site } from "@/lib/site";
+import { getLenis } from "./SmoothScroll";
 
 function switchLocalePath(pathname: string, to: Locale) {
   const parts = pathname.split("/");
@@ -72,9 +73,21 @@ export function Header() {
     { href: `/${locale}/meniu`, label: dict.nav.menu },
     { href: anchor("poveste"), label: dict.nav.story },
     { href: anchor("evenimente"), label: dict.nav.events },
-    { href: anchor("recenzii"), label: dict.nav.reviews },
+    { href: `/${locale}/rezervare`, label: dict.nav.bookings },
   ];
   const ink = tone === "light" && !menuOpen;
+
+  // ancorele de pe pagina principală (#poveste, #evenimente) derulează lin, prin Lenis
+  const onAnchor = (e: React.MouseEvent, href: string) => {
+    if (!href.startsWith("#")) return;
+    const el = document.getElementById(href.slice(1));
+    if (!el) return;
+    e.preventDefault();
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(top, { duration: 1.6, force: true });
+    else window.scrollTo({ top, behavior: "smooth" });
+  };
 
   return (
     <>
@@ -83,13 +96,13 @@ export function Header() {
       </a>
       <header
         data-site-header
-        className={`site-header fixed inset-x-0 top-0 z-50 transition-[color,opacity] duration-500 ${ink ? "text-inchiostro" : "text-crema"}`}
+        className={`site-header fixed inset-x-0 top-0 z-50 transition-[color,opacity,background-color] duration-500 ${ink ? "text-inchiostro" : "text-crema"} ${isHome ? "" : "border-b border-linia bg-notte"}`}
       >
-        <div className="mx-auto grid h-16 max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-8">
+        <div className="mx-auto grid h-[4.5rem] max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-8">
           {/* stânga */}
           <nav className="hidden items-center gap-7 lg:flex" aria-label="Principal">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className="eyebrow opacity-80 transition-opacity hover:opacity-100">
+              <Link key={l.href} href={l.href} onClick={(e) => onAnchor(e, l.href)} className="eyebrow opacity-80 transition-opacity hover:opacity-100">
                 {l.label}
               </Link>
             ))}
@@ -110,7 +123,7 @@ export function Header() {
 
           {/* centru */}
           <Link href={`/${locale}`} aria-label="Casinia Pizza Pub" className="justify-self-center">
-            <Logo tone={ink ? "light" : "dark"} />
+            <Logo height={60} priority className="drop-shadow-[0_2px_10px_rgb(0_0_0/0.45)]" />
           </Link>
 
           {/* dreapta */}
@@ -123,7 +136,8 @@ export function Header() {
                 <Link
                   key={l}
                   href={switchLocalePath(pathname, l)}
-                  onClick={() => rememberLocale(l)}
+                  onClick={() => switchLocale(l, switchLocalePath(pathname, l))}
+                  scroll={false}
                   hrefLang={l}
                   aria-current={l === locale ? "true" : undefined}
                   className={`eyebrow transition-opacity ${l === locale ? "opacity-100 underline underline-offset-4" : "opacity-55 hover:opacity-100"}`}
@@ -175,13 +189,20 @@ export function Header() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.35 }}
-              className="fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto bg-notte text-crema lg:hidden"
+              className="fixed inset-x-0 bottom-0 top-[4.5rem] z-40 overflow-y-auto bg-notte text-crema lg:hidden"
               aria-label="Mobil"
             >
               <ul className="flex flex-col gap-1 px-6 pb-10 pt-6">
-                {[...links, { href: `/${locale}/rezervare`, label: dict.nav.reserve }].map((l, i) => (
+                {links.map((l, i) => (
                   <motion.li key={l.href} initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.05 + i * 0.05 }}>
-                    <Link href={l.href} onClick={() => setOpenFor(null)} className="block py-2 font-display text-4xl">
+                    <Link
+                      href={l.href}
+                      onClick={(e) => {
+                        setOpenFor(null);
+                        onAnchor(e, l.href);
+                      }}
+                      className="block py-2 font-display text-4xl"
+                    >
                       {l.label}
                     </Link>
                   </motion.li>
@@ -191,7 +212,8 @@ export function Header() {
                     <Link
                       key={l}
                       href={switchLocalePath(pathname, l)}
-                      onClick={() => rememberLocale(l)}
+                      onClick={() => switchLocale(l, switchLocalePath(pathname, l))}
+                  scroll={false}
                       className={`eyebrow ${l === locale ? "text-ottone" : "opacity-60"}`}
                     >
                       {localeLabels[l]}

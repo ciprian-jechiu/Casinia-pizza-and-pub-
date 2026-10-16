@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { useI18n } from "./I18nProvider";
@@ -31,13 +32,13 @@ export function MenuBoard() {
     const el = sections.current.get(id);
     if (!el) return;
     const lenis = getLenis();
-    if (lenis) lenis.scrollTo(el, { offset: -140 });
+    if (lenis) lenis.scrollTo(el, { offset: -150 });
     else el.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-24 sm:px-8">
-      <nav className="sticky top-18 z-30 -mx-4 mb-10 border-b border-linia bg-notte/85 px-4 py-3 backdrop-blur-xl sm:-mx-8 sm:px-8" aria-label={dict.nav.menu}>
+      <nav className="sticky top-[4.5rem] z-40 -mx-4 mb-10 border-b border-linia bg-notte px-4 py-3 sm:-mx-8 sm:px-8" aria-label={dict.nav.menu}>
         <ul className="flex gap-2 overflow-x-auto" data-lenis-prevent-touch>
           {categories.map((c) => (
             <li key={c.id} className="relative shrink-0">
@@ -75,25 +76,29 @@ export function MenuBoard() {
                 <li key={it.id} className="flex gap-5">
                   {it.image ? (
                     isBanner(it) ? (
-                      <div className="relative hidden aspect-[2.2/1] w-44 shrink-0 overflow-hidden rounded-2xl bg-[#121212] sm:block">
-                        <Image src={menuImage(it.image, 640)} alt="" fill sizes="11rem" className="object-cover" style={{ objectPosition: "17% 50%" }} />
-                      </div>
+                      <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="relative hidden aspect-[2.2/1] w-44 shrink-0 overflow-hidden rounded-2xl bg-[#121212] sm:block">
+                        <Image src={menuImage(it.image, 640)} alt="" fill sizes="11rem" className="object-cover transition-transform duration-700 hover:scale-105" style={{ objectPosition: "17% 50%" }} />
+                      </Link>
                     ) : (
-                      <div className="arch relative size-24 shrink-0 bg-legno">
-                        <Image src={menuImage(it.image, 320)} alt="" fill sizes="6rem" className="object-cover" />
-                      </div>
+                      <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="arch relative size-24 shrink-0 bg-legno">
+                        <Image src={menuImage(it.image, 320)} alt="" fill sizes="6rem" className="object-cover transition-transform duration-700 hover:scale-105" />
+                      </Link>
                     )
                   ) : (
                     <div className="hidden size-24 shrink-0 sm:block" aria-hidden />
                   )}
                   <div className="min-w-0 flex-1">
                     {it.image && isBanner(it) && (
-                      <div className="relative mb-3 aspect-[2.2/1] w-full overflow-hidden rounded-2xl bg-[#121212] sm:hidden">
+                      <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="relative mb-3 block aspect-[2.2/1] w-full overflow-hidden rounded-2xl bg-[#121212] sm:hidden">
                         <Image src={menuImage(it.image, 800)} alt="" fill sizes="90vw" className="object-cover" style={{ objectPosition: "17% 50%" }} />
-                      </div>
+                      </Link>
                     )}
                     <div className="flex items-baseline gap-3">
-                      <h3 className="font-display text-2xl leading-tight">{it.name[locale]}</h3>
+                      <h3 className="font-display text-2xl leading-tight">
+                        <Link href={`/${locale}/meniu/${it.id}`} className="underline-offset-4 hover:text-ottone hover:underline">
+                          {it.name[locale]}
+                        </Link>
+                      </h3>
                       <span className="leader" aria-hidden />
                       <span className="shrink-0 font-display text-xl text-ottone tabular-nums">{formatPrice(it.price, locale)}</span>
                     </div>

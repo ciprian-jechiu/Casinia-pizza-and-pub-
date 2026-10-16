@@ -37,8 +37,8 @@ export function StoryScene() {
         .fromTo(q("[data-line]"), { yPercent: 105, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 1, stagger: 0.45, ease: "power2.out" }, 0.6)
         .fromTo(
           q("[data-script]"),
-          { clipPath: "inset(-20% 100% -20% 0)", autoAlpha: 0 },
-          { clipPath: "inset(-20% -10% -20% 0)", autoAlpha: 1, duration: 1.1, stagger: 0.9, ease: "power1.inOut" },
+          { clipPath: "inset(-80% 100% -80% -10%)", autoAlpha: 0 },
+          { clipPath: "inset(-80% -20% -80% -10%)", autoAlpha: 1, duration: 1.1, stagger: 0.9, ease: "power1.inOut" },
           1.8,
         )
         .addLabel("s1", 4.4)
@@ -63,7 +63,7 @@ export function StoryScene() {
             {dict.home.story.map((line, i) => {
               const { before, script, after } = parseLine(line);
               return (
-                <span key={i} className="block overflow-hidden pb-[0.06em]">
+                <span key={i} className="block">
                   <span data-line className="relative inline-block">
                     {before}
                     {script && (
