@@ -167,6 +167,13 @@ const en: Dictionary = {
     refresh: "Refresh",
     logout: "Sign out",
     none: "Nothing here yet.",
+    exportTitle: "Export bookings to Excel",
+    exportFrom: "From",
+    exportTo: "To",
+    exportAllStatuses: "All statuses",
+    exportButton: "Download Excel",
+    exporting: "Preparing…",
+    exportHint: "Leave the dates empty to export every booking.",
     status: {
       new: "New",
       confirmed: "Confirmed",

@@ -22,6 +22,7 @@ export function AdminPanel() {
   const [tab, setTab] = useState<"orders" | "reservations">("orders");
   const [data, setData] = useState<{ orders: OrderRecord[]; reservations: ReservationRecord[] } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(
     async (k: string) => {
@@ -82,6 +83,30 @@ export function AdminPanel() {
       headers: { "content-type": "application/json", "x-admin-key": key },
       body: JSON.stringify({ table, id, status }),
     });
+  }
+
+  async function exportExcel(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!key) return;
+    const qs = new URLSearchParams(
+      [...new FormData(e.currentTarget)].map(([k, v]) => [k, String(v)] as [string, string]).filter(([, v]) => v),
+    );
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/admin/export?${qs}`, { headers: { "x-admin-key": key }, cache: "no-store" });
+      if (!res.ok) throw new Error(String(res.status));
+      const name = /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "casinia-rezervari.xlsx";
+      const url = URL.createObjectURL(await res.blob());
+      const a = Object.assign(document.createElement("a"), { href: url, download: name });
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      setError(dict.errors.generic.replace("{phone}", "—"));
+    } finally {
+      setExporting(false);
+    }
   }
 
   const when = (iso: string) =>
@@ -160,7 +185,34 @@ export function AdminPanel() {
             ))}
           </ul>
         )
-      ) : data.reservations.length === 0 ? (
+      ) : (
+        <>
+        <form onSubmit={exportExcel} className="mb-8 rounded-2xl border border-linia bg-legno/60 p-5">
+          <p className="mb-4 font-display text-xl">{dict.admin.exportTitle}</p>
+          <div className="flex flex-wrap items-end gap-4">
+            <label className="block text-sm text-crema-dim">
+              {dict.admin.exportFrom}
+              <input type="date" name="from" className="field mt-1 w-44" />
+            </label>
+            <label className="block text-sm text-crema-dim">
+              {dict.admin.exportTo}
+              <input type="date" name="to" className="field mt-1 w-44" />
+            </label>
+            <label className="block text-sm text-crema-dim">
+              Status
+              <select name="status" className="field mt-1 w-48" defaultValue="">
+                <option value="">{dict.admin.exportAllStatuses}</option>
+                {statuses.map((s) => (
+                  <option key={s} value={s}>{dict.admin.status[s]}</option>
+                ))}
+              </select>
+            </label>
+            <button className="btn btn-brass" disabled={exporting}>{exporting ? dict.admin.exporting : dict.admin.exportButton}</button>
+          </div>
+          <p className="mt-3 text-xs text-crema-dim">{dict.admin.exportHint}</p>
+          {error && <p role="alert" className="mt-2 text-sm text-errore">{error}</p>}
+        </form>
+        {data.reservations.length === 0 ? (
         <p className="text-crema-dim">{dict.admin.none}</p>
       ) : (
         <div className="overflow-x-auto" data-lenis-prevent>
@@ -191,6 +243,8 @@ export function AdminPanel() {
             </tbody>
           </table>
         </div>
+      )}
+        </>
       )}
     </div>
   );

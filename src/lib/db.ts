@@ -44,6 +44,8 @@ export interface Store {
   createReservation(r: NewReservation): Promise<ReservationRecord>;
   listOrders(): Promise<OrderRecord[]>;
   listReservations(): Promise<ReservationRecord[]>;
+  /** Toate rezervările, fără limită (pentru exportul în Excel). */
+  listAllReservations(): Promise<ReservationRecord[]>;
   setStatus(table: "orders" | "reservations", id: string, status: Status): Promise<void>;
 }
 
@@ -80,6 +82,22 @@ class SupabaseStore implements Store {
       .limit(300);
     if (error) throw error;
     return data as ReservationRecord[];
+  }
+  async listAllReservations() {
+    const all: ReservationRecord[] = [];
+    const page = 1000;
+    for (let from = 0; ; from += page) {
+      const { data, error } = await this.db
+        .from("reservations")
+        .select("*")
+        .order("date", { ascending: true })
+        .order("time", { ascending: true })
+        .range(from, from + page - 1);
+      if (error) throw error;
+      all.push(...(data as ReservationRecord[]));
+      if (!data || data.length < page) break;
+    }
+    return all;
   }
   async setStatus(table: "orders" | "reservations", id: string, status: Status) {
     const { error } = await this.db.from(table).update({ status }).eq("id", id);
@@ -128,6 +146,9 @@ class FileStore implements Store {
     return (await this.read()).reservations.sort((a, b) =>
       `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`),
     );
+  }
+  async listAllReservations() {
+    return this.listReservations();
   }
   async setStatus(table: "orders" | "reservations", id: string, status: Status) {
     const data = await this.read();

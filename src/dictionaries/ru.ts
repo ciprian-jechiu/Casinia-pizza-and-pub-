@@ -167,6 +167,13 @@ const ru: Dictionary = {
     refresh: "Обновить",
     logout: "Выйти",
     none: "Пока пусто.",
+    exportTitle: "Экспорт бронирований в Excel",
+    exportFrom: "С",
+    exportTo: "По",
+    exportAllStatuses: "Все статусы",
+    exportButton: "Скачать Excel",
+    exporting: "Подготовка…",
+    exportHint: "Оставьте даты пустыми, чтобы выгрузить все бронирования.",
     status: {
       new: "Новый",
       confirmed: "Подтверждён",

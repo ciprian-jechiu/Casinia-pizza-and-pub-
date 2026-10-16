@@ -165,6 +165,13 @@ const ro = {
     refresh: "Reîncarcă",
     logout: "Ieși",
     none: "Nimic aici încă.",
+    exportTitle: "Exportă rezervările în Excel",
+    exportFrom: "De la",
+    exportTo: "Până la",
+    exportAllStatuses: "Toate statusurile",
+    exportButton: "Descarcă Excel",
+    exporting: "Se pregătește…",
+    exportHint: "Lasă datele goale ca să exporți toate rezervările.",
     status: {
       new: "Nouă",
       confirmed: "Confirmată",
