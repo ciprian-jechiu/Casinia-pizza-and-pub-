@@ -158,15 +158,132 @@ class FileStore implements Store {
   }
 }
 
+// ───────── Google Sheets (tabelul e baza de date) ─────────
+
+/**
+ * Vorbește cu scriptul din tabel (google-sheets/Code.gs), publicat ca aplicație web.
+ * Fiecare rezervare/comandă devine imediat un rând în tabel; statusul schimbat în tabel apare și în admin.
+ */
+class SheetsStore implements Store {
+  constructor(
+    private url: string,
+    private secret: string,
+  ) {}
+
+  private async call<T>(action: string, payload: Record<string, unknown> = {}): Promise<T> {
+    const res = await fetch(this.url, {
+      method: "POST",
+      headers: { "content-type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ secret: this.secret, action, ...payload }),
+      redirect: "follow",
+      cache: "no-store",
+      signal: AbortSignal.timeout(20_000),
+    });
+    const text = await res.text();
+    let data: { error?: string } & T;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(`[sheets] răspuns invalid (${res.status}): ${text.slice(0, 120)}`);
+    }
+    if (data.error) throw new Error(`[sheets] ${data.error}`);
+    return data;
+  }
+
+  async createOrder(o: NewOrder | OrderRecord) {
+    this.cached = null;
+    return (await this.call<{ record: OrderRecord }>("createOrder", { data: o })).record;
+  }
+  async createReservation(r: NewReservation | ReservationRecord) {
+    this.cached = null;
+    return (await this.call<{ record: ReservationRecord }>("createReservation", { data: r })).record;
+  }
+  // panoul cere comenzile și rezervările deodată → un singur apel la tabel
+  private cached: { at: number; p: Promise<{ orders: OrderRecord[]; reservations: ReservationRecord[] }> } | null = null;
+  private list() {
+    if (!this.cached || Date.now() - this.cached.at > 2000) {
+      const p = this.call<{ orders: OrderRecord[]; reservations: ReservationRecord[] }>("list");
+      p.catch(() => (this.cached = null));
+      this.cached = { at: Date.now(), p };
+    }
+    return this.cached.p;
+  }
+  async listOrders() {
+    return (await this.list()).orders;
+  }
+  async listReservations() {
+    return (await this.list()).reservations;
+  }
+  async listAllReservations() {
+    return (await this.list()).reservations;
+  }
+  async setStatus(table: "orders" | "reservations", id: string, status: Status) {
+    this.cached = null;
+    await this.call("setStatus", { table, id, status });
+  }
+}
+
+/**
+ * Supabase rămâne baza principală, iar tabelul primește o copie a fiecărui rând (același ID),
+ * plus schimbările de status. Dacă Google nu răspunde, rezervarea tot se salvează.
+ */
+class MirroredStore implements Store {
+  constructor(
+    private primary: Store,
+    private sheets: SheetsStore,
+  ) {}
+  private async mirror(what: string, fn: () => Promise<unknown>) {
+    try {
+      await fn();
+    } catch (err) {
+      console.error(`[sheets] copierea în tabel a eșuat (${what})`, err);
+    }
+  }
+  async createOrder(o: NewOrder) {
+    const rec = await this.primary.createOrder(o);
+    await this.mirror("comandă", () => this.sheets.createOrder(rec));
+    return rec;
+  }
+  async createReservation(r: NewReservation) {
+    const rec = await this.primary.createReservation(r);
+    await this.mirror("rezervare", () => this.sheets.createReservation(rec));
+    return rec;
+  }
+  listOrders() {
+    return this.primary.listOrders();
+  }
+  listReservations() {
+    return this.primary.listReservations();
+  }
+  listAllReservations() {
+    return this.primary.listAllReservations();
+  }
+  async setStatus(table: "orders" | "reservations", id: string, status: Status) {
+    await this.primary.setStatus(table, id, status);
+    await this.mirror("status", () => this.sheets.setStatus(table, id, status));
+  }
+}
+
 let store: Store | null | undefined;
 
-/** Returnează store-ul activ, sau null dacă în producție lipsește configurarea Supabase. */
+/**
+ * Store-ul activ:
+ *  - Supabase (+ copie în Google Sheets, dacă e configurat),
+ *  - altfel Google Sheets ca bază de date,
+ *  - altfel fișier local (doar în dezvoltare); null în producție fără configurare.
+ */
 export function getStore(): Store | null {
   if (store !== undefined) return store;
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const sheetsUrl = process.env.GOOGLE_SHEETS_URL;
+  const sheetsSecret = process.env.GOOGLE_SHEETS_SECRET;
+  const sheets = sheetsUrl && sheetsSecret ? new SheetsStore(sheetsUrl, sheetsSecret) : null;
   if (url && key) {
-    store = new SupabaseStore(createClient(url, key, { auth: { persistSession: false } }));
+    const supabase = new SupabaseStore(createClient(url, key, { auth: { persistSession: false } }));
+    store = sheets ? new MirroredStore(supabase, sheets) : supabase;
+  } else if (sheets) {
+    store = sheets;
   } else if (process.env.NODE_ENV !== "production") {
     store = new FileStore();
   } else {

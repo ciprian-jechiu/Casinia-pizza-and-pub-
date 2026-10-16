@@ -41,6 +41,37 @@ Deschide http://localhost:3000. Fără Supabase configurat, în dezvoltare comen
 
 În producție, fără Supabase configurat, formularele răspund cu un mesaj care roagă clientul să sune.
 
+## Google Sheets — tabelul live cu rezervări și comenzi
+
+Fiecare rezervare și comandă de pe site apare imediat ca rând nou în tabelul Google
+„Casinia Pizza Pub — Rezervări și comenzi (site)”. Statusul se poate schimba și din tabel
+(listă derulantă în coloana „Status”), iar panoul de administrare de pe site îl vede.
+
+- Fără Supabase: tabelul **este** baza de date (admin-ul citește din el).
+- Cu Supabase: Supabase rămâne baza principală, iar tabelul primește o copie a fiecărui rând
+  și fiecare schimbare de status (dacă Google nu răspunde, rezervarea tot se salvează).
+
+Instalare (o singură dată, ~5 minute):
+
+1. Deschide tabelul → **Extensii → Apps Script**. Șterge codul existent și lipește tot conținutul
+   din `google-sheets/Code.gs`. Salvează (Ctrl/Cmd + S).
+2. **Setările proiectului** (rotița din stânga) → **Proprietăți script** → **Adaugă** →
+   proprietate `SECRET`, valoare = o parolă lungă (aceeași ca `GOOGLE_SHEETS_SECRET`).
+3. Înapoi la editor → alege funcția `setup` → **▶ Rulează** → acceptă permisiunile Google.
+   Se creează foile „Rezervări” și „Comenzi”.
+4. **Implementare → Implementare nouă** → tip **Aplicație web** → *Execută ca: Eu*,
+   *Cine are acces: Oricine* → **Implementează**. Copiază URL-ul care se termină în `/exec`.
+5. În `.env.local` (local) și în variabilele de mediu de la hosting:
+   ```
+   GOOGLE_SHEETS_URL=https://script.google.com/macros/s/…/exec
+   GOOGLE_SHEETS_SECRET=aceeași-parolă-ca-la-pasul-2
+   ```
+6. Repornește site-ul. Fă o rezervare de test → apare în tabel.
+
+„Oricine” înseamnă doar că site-ul poate apela scriptul; fără `SECRET` corect scriptul refuză
+orice cerere, iar tabelul rămâne privat (îl vede doar cine are acces în Google Drive).
+Dacă modifici `Code.gs`: Implementare → Gestionează implementările → ✏️ → Versiune nouă.
+
 ## Structură
 
 ```
