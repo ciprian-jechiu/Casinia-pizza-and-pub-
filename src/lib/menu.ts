@@ -2,7 +2,7 @@ import type { Locale } from "./i18n";
 
 export type L10n = Record<Locale, string>;
 
-export type CategoryId = "pizza" | "fastfood" | "garnituri" | "micdejun";
+export type CategoryId = "oferte" | "pizza" | "fastfood" | "garnituri" | "micdejun";
 
 export type MenuItem = {
   id: string;
@@ -16,6 +16,13 @@ export type MenuItem = {
   /** fișierul imaginii de pe CDN-ul meniului oficial */
   image?: string;
   signature?: boolean;
+  /** produs-ofertă (rubrica „Oferte”) */
+  offer?: {
+    /** se poate comanda doar cu livrare */
+    deliveryOnly: boolean;
+    /** clientul alege `count` pizza din lista `from` (pot fi și repetate) */
+    choose?: { count: number; from: string[] };
+  };
 };
 
 const CDN = "https://img.ps.me/cdn-cgi/image";
@@ -60,12 +67,18 @@ const IMAGE_SIZE: Record<string, [number, number]> = {
   "inele-ceapa": [1000, 664],
   "cartofi-fries": [800, 1000],
   "cartofi-wedges": [1000, 667],
+  "combo-burger-clasic": [423, 634],
+  "combo-cheeseburger": [423, 634],
+  "combo-burger-krispy": [423, 639],
+  "combo-double-cheeseburger": [423, 639],
+  "pizza-3-plus-1": [624, 1280],
 };
 
 /** Lățime × înălțime pentru fotografia produsului (4:3 dacă nu e cunoscută). */
 export const imageSize = (id: string): [number, number] => IMAGE_SIZE[id] ?? [1200, 900];
 
 export const categories: { id: CategoryId; name: L10n }[] = [
+  { id: "oferte", name: { ro: "Oferte", ru: "Акции", en: "Offers" } },
   { id: "pizza", name: { ro: "Pizza", ru: "Пицца", en: "Pizza" } },
   { id: "fastfood", name: { ro: "Burgeri și gustări", ru: "Бургеры и закуски", en: "Burgers & bites" } },
   { id: "garnituri", name: { ro: "Garnituri", ru: "Гарниры", en: "Sides" } },
@@ -75,6 +88,89 @@ export const categories: { id: CategoryId; name: L10n }[] = [
 const same = (s: string): L10n => ({ ro: s, ru: s, en: s });
 
 export const menu: MenuItem[] = [
+  // ───────────── OFERTE (afișele Casinia; doar cu livrare) ─────────────
+  {
+    id: "pizza-3-plus-1",
+    category: "oferte",
+    name: { ro: "Pizza 3+1 gratis", ru: "Пицца 3+1 в подарок", en: "Pizza 3+1 free" },
+    description: {
+      ro: "Alegi 4 pizza: plătești 3, a 4-a e gratis",
+      ru: "Выберите 4 пиццы: платите за 3, четвёртая — бесплатно",
+      en: "Pick 4 pizzas: pay for 3, the 4th is free",
+    },
+    price: 465,
+    image: "/oferte/pizza-3-plus-1.jpg",
+    offer: {
+      deliveryOnly: true,
+      choose: {
+        count: 4,
+        from: [
+          "pizza-margherita",
+          "pizza-quattro-formaggi",
+          "pizza-capricciosa",
+          "pizza-di-carne",
+          "pizza-pollo",
+          "pizza-bbq",
+          "pizza-carbonara",
+          "pizza-pepperoni",
+          "pizza-casinia",
+        ],
+      },
+    },
+  },
+  {
+    id: "combo-burger-clasic",
+    category: "oferte",
+    name: { ro: "Combo Burger Clasic", ru: "Комбо Классический бургер", en: "Classic Burger combo" },
+    description: {
+      ro: "Burger clasic + cartofi pai + Pepsi cadou",
+      ru: "Классический бургер + картофель фри + Pepsi в подарок",
+      en: "Classic burger + fries + a free Pepsi",
+    },
+    price: 170,
+    image: "/oferte/combo-burger-clasic.jpg",
+    offer: { deliveryOnly: true },
+  },
+  {
+    id: "combo-cheeseburger",
+    category: "oferte",
+    name: { ro: "Combo Cheeseburger", ru: "Комбо Чизбургер", en: "Cheeseburger combo" },
+    description: {
+      ro: "Cheeseburger + cartofi pai + Pepsi cadou",
+      ru: "Чизбургер + картофель фри + Pepsi в подарок",
+      en: "Cheeseburger + fries + a free Pepsi",
+    },
+    price: 170,
+    image: "/oferte/combo-cheeseburger.jpg",
+    offer: { deliveryOnly: true },
+  },
+  {
+    id: "combo-burger-krispy",
+    category: "oferte",
+    name: { ro: "Combo Burger Krispy", ru: "Комбо Бургер Krispy", en: "Krispy Burger combo" },
+    description: {
+      ro: "Burger Krispy + cartofi pai + Pepsi cadou",
+      ru: "Бургер Krispy + картофель фри + Pepsi в подарок",
+      en: "Krispy burger + fries + a free Pepsi",
+    },
+    price: 170,
+    image: "/oferte/combo-burger-krispy.jpg",
+    offer: { deliveryOnly: true },
+  },
+  {
+    id: "combo-double-cheeseburger",
+    category: "oferte",
+    name: { ro: "Combo Double Cheeseburger", ru: "Комбо Двойной чизбургер", en: "Double Cheeseburger combo" },
+    description: {
+      ro: "Double Cheeseburger + cartofi pai + Pepsi cadou",
+      ru: "Двойной чизбургер + картофель фри + Pepsi в подарок",
+      en: "Double cheeseburger + fries + a free Pepsi",
+    },
+    price: 220,
+    image: "/oferte/combo-double-cheeseburger.jpg",
+    offer: { deliveryOnly: true },
+  },
+
   // ───────────── PIZZA ─────────────
   {
     id: "pizza-casinia",

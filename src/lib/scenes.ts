@@ -24,6 +24,7 @@ export const SCENE = {
 
 /** Imaginea din stânga panoului de meniu, pe categorie (fotografiile Casinia unde există). */
 export const CATEGORY_IMAGE: Record<CategoryId, { src: string; alt: string }> = {
+  oferte: { src: "/oferte/pizza-3-plus-1.jpg", alt: "Oferta Pizza 3+1 gratis" },
   pizza: { src: "/oven-pizza.jpg", alt: "Pizza pe lopată, în gura cuptorului" },
   fastfood: { src: menuImage("e3150c0a-08ae-4829-b71a-6dbd49e3bbbf_image.png", 1600), alt: "Double Cheese Burger" },
   garnituri: { src: menuImage("244b4fb9-4c39-43ce-a1e2-c6fa6a38476b_image.png", 1600), alt: "Asorti de cartofi" },

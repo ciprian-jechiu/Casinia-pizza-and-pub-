@@ -4,16 +4,22 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { menuById } from "@/lib/menu";
 
-export type CartLine = { id: string; qty: number };
+/**
+ * Un rând din coș. `choices` = pizzele alese pentru oferta 3+1 (în ordine sortată),
+ * iar `key` deosebește rândurile cu același produs dar alegeri diferite.
+ */
+export type CartLine = { key: string; id: string; qty: number; choices?: string[] };
+
+export const lineKey = (id: string, choices?: string[]) => (choices?.length ? `${id}:${[...choices].sort().join(",")}` : id);
 
 type CartState = {
   lines: CartLine[];
   open: boolean;
   /** crește la fiecare adăugare, ca iconița coșului să poată reacționa */
   bump: number;
-  add: (id: string, qty?: number) => void;
-  setQty: (id: string, qty: number) => void;
-  remove: (id: string) => void;
+  add: (id: string, qty?: number, choices?: string[]) => void;
+  setQty: (key: string, qty: number) => void;
+  remove: (key: string) => void;
   clear: () => void;
   setOpen: (open: boolean) => void;
 };
@@ -24,19 +30,21 @@ export const useCart = create<CartState>()(
       lines: [],
       open: false,
       bump: 0,
-      add: (id, qty = 1) =>
+      add: (id, qty = 1, choices) =>
         set((s) => {
-          const existing = s.lines.find((l) => l.id === id);
+          const sorted = choices?.length ? [...choices].sort() : undefined;
+          const key = lineKey(id, sorted);
+          const existing = s.lines.find((l) => l.key === key);
           const lines = existing
-            ? s.lines.map((l) => (l.id === id ? { ...l, qty: Math.min(30, l.qty + qty) } : l))
-            : [...s.lines, { id, qty }];
+            ? s.lines.map((l) => (l.key === key ? { ...l, qty: Math.min(30, l.qty + qty) } : l))
+            : [...s.lines, { key, id, qty, ...(sorted ? { choices: sorted } : {}) }];
           return { lines, bump: s.bump + 1 };
         }),
-      setQty: (id, qty) =>
+      setQty: (key, qty) =>
         set((s) => ({
-          lines: qty <= 0 ? s.lines.filter((l) => l.id !== id) : s.lines.map((l) => (l.id === id ? { ...l, qty: Math.min(30, qty) } : l)),
+          lines: qty <= 0 ? s.lines.filter((l) => l.key !== key) : s.lines.map((l) => (l.key === key ? { ...l, qty: Math.min(30, qty) } : l)),
         })),
-      remove: (id) => set((s) => ({ lines: s.lines.filter((l) => l.id !== id) })),
+      remove: (key) => set((s) => ({ lines: s.lines.filter((l) => l.key !== key) })),
       clear: () => set({ lines: [] }),
       setOpen: (open) => set({ open }),
     }),
@@ -44,9 +52,12 @@ export const useCart = create<CartState>()(
       name: "casinia-cart",
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ lines: s.lines }),
-      // aruncă produsele care nu mai există în meniu
+      // aruncă produsele care nu mai există în meniu; coșurile vechi primesc `key`
       merge: (persisted, current) => {
-        const lines = ((persisted as Partial<CartState>)?.lines ?? []).filter((l) => menuById.has(l.id));
+        const raw = ((persisted as Partial<CartState>)?.lines ?? []) as Partial<CartLine>[];
+        const lines = raw
+          .filter((l): l is CartLine => typeof l.id === "string" && typeof l.qty === "number" && menuById.has(l.id))
+          .map((l) => ({ ...l, key: l.key ?? lineKey(l.id, l.choices) }));
         return { ...current, lines };
       },
     },
@@ -64,3 +75,6 @@ export function cartTotals(lines: CartLine[]) {
   }
   return { count, total };
 }
+
+/** Coșul conține oferte care se pot comanda doar cu livrare. */
+export const hasDeliveryOnly = (lines: CartLine[]) => lines.some((l) => menuById.get(l.id)?.offer?.deliveryOnly);

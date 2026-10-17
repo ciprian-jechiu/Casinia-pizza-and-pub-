@@ -9,6 +9,8 @@ import { categories, imageSize, itemsByCategory, menu, menuById, menuImage } fro
 import { nutritionFor } from "@/lib/nutrition";
 import { CATEGORY_IMAGE } from "@/lib/scenes";
 import { AddToCart } from "@/components/AddToCart";
+import { OfferPicker } from "@/components/OfferPicker";
+import { site } from "@/lib/site";
 
 export function generateStaticParams() {
   return menu.map((m) => ({ id: m.id }));
@@ -34,7 +36,8 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
   const n = nutritionFor(id);
   const category = categories.find((c) => c.id === item.category)!;
   const related = itemsByCategory(item.category).filter((m) => m.id !== id).slice(0, 4);
-  const ingredients = item.description?.[lang].split(/,\s*/).filter(Boolean) ?? [];
+  // la oferte descrierea e „ce include” (burger + cartofi + Pepsi), nu o listă de ingrediente
+  const ingredients = item.offer ? [] : (item.description?.[lang].split(/,\s*/).filter(Boolean) ?? []);
   const [w, h] = imageSize(item.id);
   const imgSrc = item.image ? menuImage(item.image, 1600) : CATEGORY_IMAGE[item.category].src;
 
@@ -80,6 +83,15 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
           <h1 className="mt-3 text-[clamp(2.4rem,5vw,4rem)] leading-[1]">{item.name[lang]}</h1>
           <p className="mt-4 font-display text-3xl text-ottone">{formatPrice(item.price, lang)}</p>
 
+          {item.offer && (
+            <div className="mt-6 rounded-2xl border border-ottone/40 bg-legno/70 p-4">
+              <p className="font-display text-xl leading-snug">{item.description?.[lang]}</p>
+              <p className="mt-2 text-sm text-crema-dim">
+                {dict.offers.lead} <span className="text-crema">{site.ordering.deliveryZones.join(" · ")}</span>
+              </p>
+            </div>
+          )}
+
           {item.category === "pizza" && (
             <div className="mt-6 flex items-center gap-4 rounded-2xl border border-ottone/40 bg-legno/70 p-4">
               <PromoBadge size="md" />
@@ -111,7 +123,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
           )}
 
           <div className="mt-8">
-            <AddToCart id={item.id} />
+            {item.offer?.choose ? <OfferPicker item={item} /> : <AddToCart id={item.id} />}
           </div>
         </div>
       </div>

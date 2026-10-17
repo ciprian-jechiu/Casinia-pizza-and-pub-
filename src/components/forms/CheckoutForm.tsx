@@ -6,9 +6,10 @@ import { useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { fill, useI18n } from "../I18nProvider";
 import { Field, errorText } from "./Field";
-import { cartTotals, useCart } from "@/store/cart";
+import { cartTotals, hasDeliveryOnly, useCart } from "@/store/cart";
 import { menuById, menuImage } from "@/lib/menu";
 import { PROMO, promoFor } from "@/lib/promo";
+import { ChoiceList } from "../CartDrawer";
 import { formatPrice } from "@/lib/i18n";
 import { orderSlotsToday } from "@/lib/schedule";
 import { site } from "@/lib/site";
@@ -20,7 +21,10 @@ export function CheckoutForm() {
   const { locale, dict } = useI18n();
   const { lines, clear } = useCart();
   const hydrated = useHydrated();
-  const [method, setMethod] = useState<"pickup" | "delivery">("pickup");
+  const [methodChoice, setMethod] = useState<"pickup" | "delivery">("pickup");
+  // ofertele (combo-uri, pizza 3+1) se comandă doar cu livrare
+  const deliveryOnly = hasDeliveryOnly(lines);
+  const method = deliveryOnly ? "delivery" : methodChoice;
   const [when, setWhen] = useState<"asap" | "scheduled">("asap");
   const [payment, setPayment] = useState<"cash" | "card">("cash");
   const [errors, setErrors] = useState<Errors>({});
@@ -37,6 +41,8 @@ export function CheckoutForm() {
   const errMap = useMemo(
     () => ({
       ...dict.errors,
+      offer_delivery: dict.offers.deliveryOnly,
+      bad_choices: dict.offers.chooseError,
       min_order: fill(dict.checkout.minOrder, { amount: formatPrice(site.ordering.minOrderDelivery, locale) }),
     }),
     [dict, locale],
@@ -55,7 +61,7 @@ export function CheckoutForm() {
       time: when === "scheduled" ? String(fd.get("time") ?? "") : undefined,
       payment,
       notes: String(fd.get("notes") ?? ""),
-      items: lines.map((l) => ({ id: l.id, qty: l.qty })),
+      items: lines.map((l) => ({ id: l.id, qty: l.qty, ...(l.choices ? { choices: l.choices } : {}) })),
       company: String(fd.get("company") ?? ""),
     };
 
@@ -135,12 +141,13 @@ export function CheckoutForm() {
           <legend className="mb-3 text-sm text-crema-dim">{dict.checkout.method}</legend>
           <div className="flex flex-wrap gap-2" role="radiogroup">
             {(["pickup", "delivery"] as const).map((m) => (
-              <label key={m} className="chip">
-                <input type="radio" name="method" value={m} checked={method === m} onChange={() => setMethod(m)} className="sr-only" />
+              <label key={m} className={`chip ${deliveryOnly && m === "pickup" ? "pointer-events-none opacity-40" : ""}`}>
+                <input type="radio" name="method" value={m} checked={method === m} onChange={() => setMethod(m)} disabled={deliveryOnly && m === "pickup"} className="sr-only" />
                 {m === "pickup" ? dict.checkout.pickup : dict.checkout.delivery}
               </label>
             ))}
           </div>
+          {deliveryOnly && <p className="mt-3 text-sm text-ottone">{dict.offers.deliveryOnly}</p>}
         </fieldset>
 
         <div className="grid gap-6 sm:grid-cols-2">
@@ -213,12 +220,13 @@ export function CheckoutForm() {
               const it = menuById.get(l.id);
               if (!it) return null;
               return (
-                <li key={l.id} className="flex items-center gap-3 py-3">
+                <li key={l.key} className="flex items-center gap-3 py-3">
                   <div className="arch relative size-11 shrink-0 bg-legno-2">
                     {it.image && <Image src={menuImage(it.image, 160)} alt="" fill sizes="44px" className="object-cover" />}
                   </div>
                   <span className="flex-1 text-sm">
                     <span className="text-crema-dim tabular-nums">{l.qty} ×</span> {it.name[locale]}
+                    {l.choices && <ChoiceList ids={l.choices} className="mt-0.5" />}
                   </span>
                   <span className="text-sm tabular-nums">{formatPrice(it.price * l.qty, locale)}</span>
                 </li>

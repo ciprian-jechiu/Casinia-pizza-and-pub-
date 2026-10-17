@@ -23,7 +23,14 @@ export const orderSchema = z
     payment: z.enum(["cash", "card"]),
     notes: z.string().trim().max(500).optional().default(""),
     items: z
-      .array(z.object({ id: z.string().min(1).max(60), qty: z.number().int().min(1).max(30) }))
+      .array(
+        z.object({
+          id: z.string().min(1).max(60),
+          qty: z.number().int().min(1).max(30),
+          /** pizzele alese pentru oferta 3+1 */
+          choices: z.array(z.string().min(1).max(60)).max(8).optional(),
+        }),
+      )
       .min(1)
       .max(40),
     /** câmp capcană anti-spam: oamenii nu îl văd și nu îl completează */

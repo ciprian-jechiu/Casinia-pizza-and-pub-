@@ -86,7 +86,7 @@ export function CartDrawer() {
                       if (!item) return null;
                       return (
                         <motion.li
-                          key={l.id}
+                          key={l.key}
                           layout
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
@@ -98,20 +98,23 @@ export function CartDrawer() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-3">
-                              <p className="font-display text-xl leading-tight">{item.name[locale]}</p>
+                              <div className="min-w-0">
+                                <p className="font-display text-xl leading-tight">{item.name[locale]}</p>
+                                {l.choices && <ChoiceList ids={l.choices} />}
+                              </div>
                               <p className="shrink-0 text-sm text-ottone tabular-nums">{formatPrice(item.price * l.qty, locale)}</p>
                             </div>
                             <div className="mt-2 flex items-center gap-3">
                               <div className="flex items-center rounded-full border border-linia">
-                                <button type="button" className="grid size-9 place-items-center text-lg" onClick={() => setQty(l.id, l.qty - 1)} aria-label={`${dict.cart.decrease}: ${item.name[locale]}`}>
+                                <button type="button" className="grid size-9 place-items-center text-lg" onClick={() => setQty(l.key, l.qty - 1)} aria-label={`${dict.cart.decrease}: ${item.name[locale]}`}>
                                   −
                                 </button>
                                 <span className="w-6 text-center text-sm tabular-nums" aria-live="polite">{l.qty}</span>
-                                <button type="button" className="grid size-9 place-items-center text-lg" onClick={() => setQty(l.id, l.qty + 1)} aria-label={`${dict.cart.increase}: ${item.name[locale]}`}>
+                                <button type="button" className="grid size-9 place-items-center text-lg" onClick={() => setQty(l.key, l.qty + 1)} aria-label={`${dict.cart.increase}: ${item.name[locale]}`}>
                                   +
                                 </button>
                               </div>
-                              <button type="button" onClick={() => remove(l.id)} className="text-xs text-crema-dim underline-offset-4 hover:text-pomodoro hover:underline">
+                              <button type="button" onClick={() => remove(l.key)} className="text-xs text-crema-dim underline-offset-4 hover:text-pomodoro hover:underline">
                                 {dict.cart.remove}
                               </button>
                             </div>
@@ -154,4 +157,15 @@ export function CartDrawer() {
       )}
     </AnimatePresence>
   );
+}
+
+/** Pizzele alese în oferta 3+1, ex. „2 × Margherita, Carbonara, Pollo”. */
+export function ChoiceList({ ids, className = "" }: { ids: string[]; className?: string }) {
+  const { locale } = useI18n();
+  const counts = new Map<string, number>();
+  for (const id of ids) counts.set(id, (counts.get(id) ?? 0) + 1);
+  const text = [...counts]
+    .map(([id, n]) => `${n > 1 ? `${n} × ` : ""}${(menuById.get(id)?.name[locale] ?? id).replace(/^Pizza\s+/i, "")}`)
+    .join(", ");
+  return <p className={`mt-1 text-xs leading-relaxed text-crema-dim ${className}`}>{text}</p>;
 }

@@ -20,10 +20,26 @@ export async function POST(req: Request) {
 
   // Prețurile se calculează pe server, din meniu — nu ne încredem în ce trimite browserul.
   const lines: OrderLine[] = [];
-  for (const { id, qty } of o.items) {
+  for (const { id, qty, choices } of o.items) {
     const item = menuById.get(id);
     if (!item) return json({ error: "invalid", fields: [{ path: "items", code: "unknown_item" }] }, 400);
-    lines.push({ id, name: item.name.ro, qty, price: item.price });
+    // ofertele se comandă doar cu livrare
+    if (item.offer?.deliveryOnly && o.method !== "delivery") {
+      return json({ error: "invalid", fields: [{ path: "items", code: "offer_delivery" }] }, 400);
+    }
+    // pe bon: combo-urile își arată conținutul (burger + cartofi + Pepsi)
+    let name = item.offer && !item.offer.choose && item.description ? `${item.name.ro} (${item.description.ro})` : item.name.ro;
+    const rule = item.offer?.choose;
+    if (rule) {
+      // oferta 3+1: exact `count` pizza, doar din lista permisă
+      if (!choices || choices.length !== rule.count || choices.some((c) => !rule.from.includes(c))) {
+        return json({ error: "invalid", fields: [{ path: "items", code: "bad_choices" }] }, 400);
+      }
+      const counts = new Map<string, number>();
+      for (const c of choices) counts.set(c, (counts.get(c) ?? 0) + 1);
+      name += ": " + [...counts].map(([c, n]) => `${n > 1 ? `${n}× ` : ""}${menuById.get(c)!.name.ro}`).join(", ");
+    }
+    lines.push({ id: rule ? `${id}:${[...choices!].sort().join(",")}` : id, name, qty, price: item.price });
   }
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
 

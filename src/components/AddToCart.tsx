@@ -11,11 +11,18 @@ import { useI18n } from "./I18nProvider";
  */
 export function AddToCart({
   id,
+  choices,
+  disabled = false,
+  onAdded,
   label,
   compact = false,
   className = "",
 }: {
   id: string;
+  /** pizzele alese pentru oferta 3+1 */
+  choices?: string[];
+  disabled?: boolean;
+  onAdded?: () => void;
   label?: string;
   compact?: boolean;
   className?: string;
@@ -26,7 +33,9 @@ export function AddToCart({
   const [done, setDone] = useState(false);
 
   const onClick = () => {
-    add(id);
+    if (disabled) return;
+    add(id, 1, choices);
+    onAdded?.();
     setDone(true);
     window.setTimeout(() => setDone(false), 1400);
 
@@ -65,7 +74,8 @@ export function AddToCart({
       ref={ref}
       type="button"
       onClick={onClick}
-      className={`${compact ? "min-h-10 px-4 text-sm" : ""} btn ${done ? "bg-basilico text-notte" : "btn-brass"} ${className}`}
+      disabled={disabled}
+      className={`disabled:cursor-not-allowed disabled:opacity-45 ${compact ? "min-h-10 px-4 text-sm" : ""} btn ${done ? "bg-basilico text-notte" : "btn-brass"} ${className}`}
       aria-live="polite"
     >
       {done ? (
