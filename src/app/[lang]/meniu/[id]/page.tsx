@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/dictionaries";
 import { formatPrice, hasLocale } from "@/lib/i18n";
-import { categories, itemsByCategory, menu, menuById, menuImage } from "@/lib/menu";
+import { categories, imageSize, itemsByCategory, menu, menuById, menuImage } from "@/lib/menu";
 import { nutritionFor } from "@/lib/nutrition";
 import { CATEGORY_IMAGE } from "@/lib/scenes";
 import { AddToCart } from "@/components/AddToCart";
@@ -34,6 +34,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
   const category = categories.find((c) => c.id === item.category)!;
   const related = itemsByCategory(item.category).filter((m) => m.id !== id).slice(0, 4);
   const ingredients = item.description?.[lang].split(/,\s*/).filter(Boolean) ?? [];
+  const [w, h] = imageSize(item.id);
   const imgSrc = item.image ? menuImage(item.image, 1600) : CATEGORY_IMAGE[item.category].src;
 
   const rows = n
@@ -53,9 +54,24 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
         {/* imaginea */}
-        <div className={`relative w-full overflow-hidden rounded-[14px] bg-black aspect-[4/3]`}>
-          <Image src={imgSrc} alt={item.name[lang]} fill priority sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
-        </div>
+        {item.image ? (
+          // fotografia întreagă, în proporțiile ei reale, cât să încapă pe ecran fără scroll
+          <div className="flex items-start justify-center lg:sticky lg:top-28 lg:self-start">
+            <Image
+              src={imgSrc}
+              alt={item.name[lang]}
+              width={w}
+              height={h}
+              priority
+              sizes="(min-width: 1024px) 55vw, 100vw"
+              className="block h-auto max-h-[min(68svh,640px)] w-auto max-w-full rounded-[14px] bg-black object-contain shadow-[0_30px_70px_-35px_rgb(0_0_0/.9)]"
+            />
+          </div>
+        ) : (
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] bg-black">
+            <Image src={imgSrc} alt={item.name[lang]} fill priority sizes="(min-width: 1024px) 55vw, 100vw" className="object-cover" />
+          </div>
+        )}
 
         {/* detalii */}
         <div>

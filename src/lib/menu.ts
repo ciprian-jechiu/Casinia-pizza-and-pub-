@@ -36,6 +36,35 @@ export const HERO_IMAGE = "192b0215-deaa-4f2d-a86b-f21be8a10688_image.png";
  * Într-un cadru 2.2:1 cu object-position 17% se vede doar pizza.
  */
 
+/** Dimensiunile reale ale fotografiilor (lățime × înălțime), ca să fie afișate fără tăieturi. */
+const IMAGE_SIZE: Record<string, [number, number]> = {
+  "pizza-casinia": [1200, 900],
+  "pizza-carbonara": [1200, 900],
+  "pizza-di-carne": [1239, 1269],
+  "pizza-quattro-formaggi": [1200, 900],
+  "pizza-pepperoni": [1448, 1086],
+  "pizza-capricciosa": [1200, 900],
+  "pizza-pollo": [1200, 900],
+  "pizza-bbq": [1254, 1254],
+  "pizza-margherita": [1254, 1254],
+  "double-cheese-burger": [1402, 1122],
+  "cheeseburger-clasic": [1000, 667],
+  "burger-clasic": [1403, 1121],
+  "burger-krispy": [1461, 1077],
+  "aripi-bbq": [1254, 1254],
+  "aripi-krispy": [1219, 1290],
+  "chicken-nuggets": [1000, 625],
+  "nuggets-copii": [1145, 1374],
+  "creveti-tempura": [1000, 560],
+  "asorti-cartofi": [1145, 1374],
+  "inele-ceapa": [1000, 664],
+  "cartofi-fries": [800, 1000],
+  "cartofi-wedges": [1000, 667],
+};
+
+/** Lățime × înălțime pentru fotografia produsului (4:3 dacă nu e cunoscută). */
+export const imageSize = (id: string): [number, number] => IMAGE_SIZE[id] ?? [1200, 900];
+
 export const categories: { id: CategoryId; name: L10n }[] = [
   { id: "pizza", name: { ro: "Pizza", ru: "Пицца", en: "Pizza" } },
   { id: "fastfood", name: { ro: "Burgeri și gustări", ru: "Бургеры и закуски", en: "Burgers & bites" } },
