@@ -9,11 +9,15 @@ import { cartTotals, useCart } from "@/store/cart";
 import { menuById, menuImage } from "@/lib/menu";
 import { formatPrice } from "@/lib/i18n";
 import { getLenis } from "./SmoothScroll";
+import { PromoBadge } from "./PromoBanner";
+import { PROMO, promoFor } from "@/lib/promo";
 
 export function CartDrawer() {
   const { locale, dict } = useI18n();
   const { lines, open, setOpen, setQty, remove } = useCart();
   const { total } = cartTotals(lines);
+  const promo = promoFor(lines);
+  const gift = menuById.get(PROMO.giftId);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -116,8 +120,25 @@ export function CartDrawer() {
                       );
                     })}
                   </AnimatePresence>
+                  {promo.gifts > 0 && gift && (
+                    <li className="flex items-center gap-4 py-4">
+                      <PromoBadge size="md" className="size-16" />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display text-xl leading-tight">
+                          {promo.gifts} × {gift.name[locale]}
+                        </p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-ottone">{dict.promo.giftLine}</p>
+                      </div>
+                      <p className="shrink-0 text-sm text-ottone">{dict.promo.free}</p>
+                    </li>
+                  )}
                 </ul>
                 <div className="border-t border-linia px-6 py-5">
+                  {promo.pizzas > 0 && promo.toNext < PROMO.buy && (
+                    <p className="mb-4 rounded-xl bg-legno-2 px-4 py-3 text-sm text-crema">
+                      {promo.toNext === 1 ? dict.promo.nudgeOne : dict.promo.nudge.replace("{n}", String(promo.toNext))}
+                    </p>
+                  )}
                   <div className="mb-4 flex items-baseline justify-between">
                     <span className="text-crema-dim">{dict.cart.subtotal}</span>
                     <span className="font-display text-3xl text-ottone tabular-nums">{formatPrice(total, locale)}</span>

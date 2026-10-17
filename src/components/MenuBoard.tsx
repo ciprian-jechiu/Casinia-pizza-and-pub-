@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import { useI18n } from "./I18nProvider";
 import { AddToCart } from "./AddToCart";
 import { getLenis } from "./SmoothScroll";
+import { PromoBadge, PromoBanner } from "./PromoBanner";
 import { categories, itemsByCategory, menuImage, type CategoryId } from "@/lib/menu";
 import { formatPrice } from "@/lib/i18n";
 
@@ -38,6 +39,7 @@ export function MenuBoard() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-24 sm:px-8">
+      <PromoBanner className="mb-10" />
       <nav className="sticky top-[4.5rem] z-40 -mx-4 mb-10 border-b border-linia bg-notte px-4 py-3 sm:-mx-8 sm:px-8" aria-label={dict.nav.menu}>
         <ul className="flex gap-2 overflow-x-auto" data-lenis-prevent-touch>
           {categories.map((c) => (
@@ -75,8 +77,11 @@ export function MenuBoard() {
               {items.map((it) => (
                 <li key={it.id} className="flex gap-5">
                   {it.image ? (
-                    <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="arch relative size-24 shrink-0 bg-legno">
-                      <Image src={menuImage(it.image, 320)} alt="" fill sizes="6rem" className="object-cover transition-transform duration-700 hover:scale-105" />
+                    <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="relative size-24 shrink-0">
+                      <span className="arch absolute inset-0 bg-legno">
+                        <Image src={menuImage(it.image, 320)} alt="" fill sizes="6rem" className="object-cover transition-transform duration-700 hover:scale-105" />
+                      </span>
+                      {it.category === "pizza" && <PromoBadge className="absolute -right-2 -top-2 z-10" />}
                     </Link>
                   ) : (
                     <div className="hidden size-24 shrink-0 sm:block" aria-hidden />

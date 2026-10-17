@@ -2,6 +2,7 @@ import { getStore, shortId, type OrderLine } from "@/lib/db";
 import { json, rateLimited } from "@/lib/api";
 import { menuById } from "@/lib/menu";
 import { notifyOrder } from "@/lib/notify";
+import { PROMO, promoFor } from "@/lib/promo";
 import { orderSlotsToday } from "@/lib/schedule";
 import { site } from "@/lib/site";
 import { orderSchema } from "@/lib/validation";
@@ -25,6 +26,13 @@ export async function POST(req: Request) {
     lines.push({ id, name: item.name.ro, qty, price: item.price });
   }
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
+
+  // Oferta 3+1: la fiecare 3 pizza, o Margherita cadou (0 lei), ca bucătăria s-o vadă pe bon.
+  const { gifts } = promoFor(o.items);
+  if (gifts > 0) {
+    const gift = menuById.get(PROMO.giftId);
+    if (gift) lines.push({ id: `${PROMO.giftId}-cadou`, name: `${gift.name.ro} (cadou 3+1)`, qty: gifts, price: 0 });
+  }
 
   if (o.method === "delivery" && total < site.ordering.minOrderDelivery) {
     return json({ error: "invalid", fields: [{ path: "items", code: "min_order" }] }, 400);

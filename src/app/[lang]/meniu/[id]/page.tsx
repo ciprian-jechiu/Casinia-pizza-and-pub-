@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { PromoBadge } from "@/components/PromoBanner";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/dictionaries";
@@ -78,6 +79,16 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
           <p className="eyebrow text-ottone">{category.name[lang]}</p>
           <h1 className="mt-3 text-[clamp(2.4rem,5vw,4rem)] leading-[1]">{item.name[lang]}</h1>
           <p className="mt-4 font-display text-3xl text-ottone">{formatPrice(item.price, lang)}</p>
+
+          {item.category === "pizza" && (
+            <div className="mt-6 flex items-center gap-4 rounded-2xl border border-ottone/40 bg-legno/70 p-4">
+              <PromoBadge size="md" />
+              <p className="text-sm leading-relaxed">
+                <span className="block font-display text-lg text-ottone">{dict.promo.title}</span>
+                {dict.promo.product}
+              </p>
+            </div>
+          )}
 
           {ingredients.length > 0 && (
             <div className="mt-8">

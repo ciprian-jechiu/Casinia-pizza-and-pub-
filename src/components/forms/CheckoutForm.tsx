@@ -8,6 +8,7 @@ import { fill, useI18n } from "../I18nProvider";
 import { Field, errorText } from "./Field";
 import { cartTotals, useCart } from "@/store/cart";
 import { menuById, menuImage } from "@/lib/menu";
+import { PROMO, promoFor } from "@/lib/promo";
 import { formatPrice } from "@/lib/i18n";
 import { orderSlotsToday } from "@/lib/schedule";
 import { site } from "@/lib/site";
@@ -30,6 +31,8 @@ export function CheckoutForm() {
   const slots = useMemo(() => (slotsKey ? slotsKey.split(",") : []), [slotsKey]);
 
   const { total } = cartTotals(lines);
+  const promo = promoFor(lines);
+  const gift = menuById.get(PROMO.giftId);
   const belowMin = method === "delivery" && total < site.ordering.minOrderDelivery;
   const errMap = useMemo(
     () => ({
@@ -221,6 +224,16 @@ export function CheckoutForm() {
                 </li>
               );
             })}
+          {hydrated && promo.gifts > 0 && gift && (
+            <li className="flex items-center gap-3 py-3">
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-ottone font-display text-xs font-semibold text-notte">3+1</span>
+              <span className="flex-1 text-sm">
+                <span className="text-crema-dim tabular-nums">{promo.gifts} ×</span> {gift.name[locale]}{" "}
+                <span className="text-ottone">· {dict.promo.giftLine}</span>
+              </span>
+              <span className="text-sm text-ottone">{dict.promo.free}</span>
+            </li>
+          )}
         </ul>
         <div className="mt-4 flex items-baseline justify-between border-t border-linia pt-4">
           <span className="text-crema-dim">{dict.checkout.total}</span>

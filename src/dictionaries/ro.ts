@@ -82,6 +82,17 @@ const ro = {
     allergenNames: { gluten: "Gluten", milk: "Lapte", eggs: "Ouă", nuts: "Nuci", crustaceans: "Crustacee", mustard: "Muștar" },
     more: "Din aceeași categorie",
   },
+  promo: {
+    badge: "3+1",
+    title: "Pizza 3+1",
+    lead: "Comandă 3 pizza și primești a patra cadou!",
+    body: "La fiecare trei pizza comandate primești o Pizza Margherita gratis: 6+2, 9+3 și așa mai departe. Cadoul se adaugă automat în coș.",
+    product: "Intră în oferta 3+1: la fiecare 3 pizza, a patra (Margherita) e cadou.",
+    giftLine: "cadou 3+1",
+    free: "gratis",
+    nudge: "Mai adaugă {n} pizza și primești o Margherita cadou.",
+    nudgeOne: "Mai adaugă o pizza și primești o Margherita cadou.",
+  },
   cart: {
     title: "Coșul tău",
     empty: "Coșul e gol. Alege ceva din meniu și apare aici.",

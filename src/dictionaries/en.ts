@@ -84,6 +84,17 @@ const en: Dictionary = {
     allergenNames: { gluten: "Gluten", milk: "Milk", eggs: "Eggs", nuts: "Nuts", crustaceans: "Crustaceans", mustard: "Mustard" },
     more: "From the same category",
   },
+  promo: {
+    badge: "3+1",
+    title: "Pizza 3+1",
+    lead: "Order 3 pizzas and get the fourth one free!",
+    body: "For every three pizzas you order, you get a Pizza Margherita on the house: 6+2, 9+3 and so on. The gift is added to your cart automatically.",
+    product: "Part of the 3+1 offer: for every 3 pizzas, the fourth (Margherita) is free.",
+    giftLine: "3+1 gift",
+    free: "free",
+    nudge: "Add {n} more pizzas and get a Margherita for free.",
+    nudgeOne: "Add one more pizza and get a Margherita for free.",
+  },
   cart: {
     title: "Your cart",
     empty: "Your cart is empty. Pick something from the menu and it shows up here.",
