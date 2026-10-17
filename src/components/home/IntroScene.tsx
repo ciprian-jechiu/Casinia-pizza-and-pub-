@@ -6,7 +6,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useI18n } from "../I18nProvider";
-import { categories, isBanner, itemsByCategory, menu, menuImage, type CategoryId } from "@/lib/menu";
+import { categories, itemsByCategory, menu, menuImage, type CategoryId } from "@/lib/menu";
 import { CATEGORY_IMAGE, SCENE } from "@/lib/scenes";
 import { Logo } from "../Logo";
 
@@ -171,7 +171,7 @@ export function IntroScene() {
                     alt=""
                     fill
                     sizes="(min-width: 1024px) 56vw, 100vw"
-                    className={isBanner(m) ? "object-contain" : "object-cover"}
+                    className="object-cover"
                   />
                 )}
               </div>

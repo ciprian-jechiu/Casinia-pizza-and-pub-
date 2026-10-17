@@ -7,7 +7,7 @@ import { motion } from "motion/react";
 import { useI18n } from "./I18nProvider";
 import { AddToCart } from "./AddToCart";
 import { getLenis } from "./SmoothScroll";
-import { categories, isBanner, itemsByCategory, menuImage, type CategoryId } from "@/lib/menu";
+import { categories, itemsByCategory, menuImage, type CategoryId } from "@/lib/menu";
 import { formatPrice } from "@/lib/i18n";
 
 /** Meniul complet: file de categorii lipite sus + liste cu puncte de legătură până la preț. */
@@ -75,24 +75,13 @@ export function MenuBoard() {
               {items.map((it) => (
                 <li key={it.id} className="flex gap-5">
                   {it.image ? (
-                    isBanner(it) ? (
-                      <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="relative hidden aspect-[2.2/1] w-44 shrink-0 overflow-hidden rounded-2xl bg-[#121212] sm:block">
-                        <Image src={menuImage(it.image, 640)} alt="" fill sizes="11rem" className="object-cover transition-transform duration-700 hover:scale-105" style={{ objectPosition: "17% 50%" }} />
-                      </Link>
-                    ) : (
-                      <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="arch relative size-24 shrink-0 bg-legno">
-                        <Image src={menuImage(it.image, 320)} alt="" fill sizes="6rem" className="object-cover transition-transform duration-700 hover:scale-105" />
-                      </Link>
-                    )
+                    <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="arch relative size-24 shrink-0 bg-legno">
+                      <Image src={menuImage(it.image, 320)} alt="" fill sizes="6rem" className="object-cover transition-transform duration-700 hover:scale-105" />
+                    </Link>
                   ) : (
                     <div className="hidden size-24 shrink-0 sm:block" aria-hidden />
                   )}
                   <div className="min-w-0 flex-1">
-                    {it.image && isBanner(it) && (
-                      <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="relative mb-3 block aspect-[2.2/1] w-full overflow-hidden rounded-2xl bg-[#121212] sm:hidden">
-                        <Image src={menuImage(it.image, 800)} alt="" fill sizes="90vw" className="object-cover" style={{ objectPosition: "17% 50%" }} />
-                      </Link>
-                    )}
                     <div className="flex items-baseline gap-3">
                       <h3 className="font-display text-2xl leading-tight">
                         <Link href={`/${locale}/meniu/${it.id}`} className="underline-offset-4 hover:text-ottone hover:underline">

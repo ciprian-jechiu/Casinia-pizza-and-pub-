@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/dictionaries";
 import { formatPrice, hasLocale } from "@/lib/i18n";
-import { categories, isBanner, itemsByCategory, menu, menuById, menuImage } from "@/lib/menu";
+import { categories, itemsByCategory, menu, menuById, menuImage } from "@/lib/menu";
 import { nutritionFor } from "@/lib/nutrition";
 import { CATEGORY_IMAGE } from "@/lib/scenes";
 import { AddToCart } from "@/components/AddToCart";
@@ -34,7 +34,6 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
   const category = categories.find((c) => c.id === item.category)!;
   const related = itemsByCategory(item.category).filter((m) => m.id !== id).slice(0, 4);
   const ingredients = item.description?.[lang].split(/,\s*/).filter(Boolean) ?? [];
-  const banner = isBanner(item);
   const imgSrc = item.image ? menuImage(item.image, 1600) : CATEGORY_IMAGE[item.category].src;
 
   const rows = n
@@ -54,8 +53,8 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
         {/* imaginea */}
-        <div className={`relative w-full overflow-hidden rounded-[14px] bg-black ${banner ? "aspect-[1024/285]" : "aspect-[4/3]"}`}>
-          <Image src={imgSrc} alt={item.name[lang]} fill priority sizes="(min-width: 1024px) 60vw, 100vw" className={banner ? "object-contain" : "object-cover"} />
+        <div className={`relative w-full overflow-hidden rounded-[14px] bg-black aspect-[4/3]`}>
+          <Image src={imgSrc} alt={item.name[lang]} fill priority sizes="(min-width: 1024px) 60vw, 100vw" className="object-cover" />
         </div>
 
         {/* detalii */}
@@ -150,7 +149,6 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
                         fill
                         sizes="(min-width: 1024px) 22vw, 45vw"
                         className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        style={isBanner(r) ? { objectPosition: "17% 50%" } : undefined}
                       />
                     ) : (
                       <div className="grid h-full place-items-center bg-legno font-display text-xl text-crema-dim">{r.name[lang]}</div>

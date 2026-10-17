@@ -23,6 +23,8 @@ const ORIGIN = "https://img.ps.me/30836";
 
 /** URL optimizat de pe CDN-ul meniului (Cloudflare Images) */
 export function menuImage(file: string, width = 800) {
+  // fotografii refăcute local (fără textul de afiș) — servite din /public/menu
+  if (file.startsWith("/")) return file;
   return `${CDN}/width=${width},format=webp/${ORIGIN}/${file}`;
 }
 
@@ -33,7 +35,6 @@ export const HERO_IMAGE = "192b0215-deaa-4f2d-a86b-f21be8a10688_image.png";
  * Pozele de pizza din meniul oficial sunt bannere late (≈1024×285) cu textul în dreapta.
  * Într-un cadru 2.2:1 cu object-position 17% se vede doar pizza.
  */
-export const isBanner = (item: MenuItem) => item.category === "pizza";
 
 export const categories: { id: CategoryId; name: L10n }[] = [
   { id: "pizza", name: { ro: "Pizza", ru: "Пицца", en: "Pizza" } },
@@ -57,7 +58,7 @@ export const menu: MenuItem[] = [
       en: "Prosciutto crudo, mozzarella, cherry tomatoes, mixed greens, pesto, parmigiano",
     },
     price: 145,
-    image: "2aef8cb2-f64b-4f45-af0e-a9aeca9e93b3_image.png",
+    image: "/menu/pizza-casinia.jpg",
   },
   {
     id: "pizza-carbonara",
@@ -70,7 +71,7 @@ export const menu: MenuItem[] = [
       en: "Guanciale, mozzarella, parmigiano, plant-based cream",
     },
     price: 155,
-    image: "8f725e36-d0d4-4bb9-a9e9-9ca986d4a646_image.png",
+    image: "/menu/pizza-carbonara.jpg",
   },
   {
     id: "pizza-di-carne",
@@ -96,7 +97,7 @@ export const menu: MenuItem[] = [
       en: "Mozzarella, brie, gorgonzola, parmigiano, plant-based cream",
     },
     price: 150,
-    image: "cea86805-b969-43e2-b1f2-fe117506ac9b_image.png",
+    image: "/menu/pizza-quattro-formaggi.jpg",
   },
   {
     id: "pizza-pepperoni",
@@ -120,7 +121,7 @@ export const menu: MenuItem[] = [
       en: "Ham, mushrooms, olives, peppers, mozzarella, parmigiano",
     },
     price: 150,
-    image: "9a6ffe9c-e934-431a-b9bd-492bd59eb647_image.png",
+    image: "/menu/pizza-capricciosa.jpg",
   },
   {
     id: "pizza-pollo",
@@ -132,7 +133,7 @@ export const menu: MenuItem[] = [
       en: "Chicken fillet, mushrooms, mozzarella, parmigiano",
     },
     price: 150,
-    image: "07dbbe82-2956-4555-94dd-4c33b5565279_image.png",
+    image: "/menu/pizza-pollo.jpg",
   },
   {
     id: "pizza-bbq",

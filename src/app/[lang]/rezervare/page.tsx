@@ -27,7 +27,7 @@ export default async function ReservationPage({ params }: PageProps<"/[lang]/rez
       </div>
       <div className="relative hidden lg:block">
         <div className="arch sticky top-28 aspect-[3/4] w-full bg-[#121212]">
-          <Image src={menuImage(pizza.image!, 1024)} alt={pizza.name[lang]} fill sizes="30vw" className="scale-[1.6] object-cover" style={{ objectPosition: "22% 50%" }} />
+          <Image src={menuImage(pizza.image!, 1024)} alt={pizza.name[lang]} fill sizes="30vw" className="object-cover" style={{ objectPosition: "45% 50%" }} />
         </div>
       </div>
     </div>
