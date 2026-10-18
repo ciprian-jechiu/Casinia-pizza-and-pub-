@@ -255,8 +255,8 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
 /** Folosit de serverul de comenzi: dacă nu e configurat Poster, nu face nimic. */
 export async function forwardToPoster(o: OrderRecord, shortNo: string) {
   if (!posterEnabled()) return;
-  // pe casă ajung doar comenzile cu livrare (POSTER_ONLY_DELIVERY=false trimite și ridicările)
-  if (o.method !== "delivery" && process.env.POSTER_ONLY_DELIVERY !== "false") return;
+  // pe casă ajung toate comenzile (livrare și ridicare); POSTER_ONLY_DELIVERY=true le-ar limita la livrare
+  if (o.method !== "delivery" && process.env.POSTER_ONLY_DELIVERY === "true") return;
   try {
     const id = await sendOrderToPoster(o, shortNo);
     console.info(`[poster] comanda #${shortNo} trimisă pe casă (incoming_order_id=${id})`);
