@@ -230,7 +230,8 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
   const n = out.length;
 
   const comment = [
-    `Site #${shortNo}`,
+    `COMANDĂ DE PE SITE #${shortNo} — sunați clientul pentru confirmare`,
+    `Client: ${o.name}, tel. ${phoneForPoster(o.phone)}`,
     o.method === "delivery" ? `LIVRARE: ${o.address ?? ""}` : "RIDICARE de la local",
     `Ora: ${o.scheduled_time ?? "cât mai repede"}`,
     `Plata: ${o.payment === "cash" ? "numerar" : "card"}`,
@@ -254,6 +255,8 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
 /** Folosit de serverul de comenzi: dacă nu e configurat Poster, nu face nimic. */
 export async function forwardToPoster(o: OrderRecord, shortNo: string) {
   if (!posterEnabled()) return;
+  // pe casă ajung doar comenzile cu livrare (POSTER_ONLY_DELIVERY=false trimite și ridicările)
+  if (o.method !== "delivery" && process.env.POSTER_ONLY_DELIVERY !== "false") return;
   try {
     const id = await sendOrderToPoster(o, shortNo);
     console.info(`[poster] comanda #${shortNo} trimisă pe casă (incoming_order_id=${id})`);
