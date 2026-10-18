@@ -3,7 +3,6 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/dictionaries";
 import { hasLocale } from "@/lib/i18n";
-import { menuById, menuImage } from "@/lib/menu";
 import { ReservationForm } from "@/components/forms/ReservationForm";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/rezervare">): Promise<Metadata> {
@@ -17,7 +16,6 @@ export default async function ReservationPage({ params }: PageProps<"/[lang]/rez
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
   const dict = await getDictionary(lang);
-  const pizza = menuById.get("pizza-quattro-formaggi")!;
   return (
     <div className="mx-auto grid max-w-7xl gap-16 px-4 pb-24 pt-36 sm:px-8 lg:grid-cols-[1fr_0.55fr]">
       <div>
@@ -26,8 +24,9 @@ export default async function ReservationPage({ params }: PageProps<"/[lang]/rez
         <ReservationForm />
       </div>
       <div className="relative hidden lg:block">
-        <div className="arch sticky top-28 aspect-[3/4] w-full bg-[#121212]">
-          <Image src={menuImage(pizza.image!, 1024)} alt={pizza.name[lang]} fill sizes="30vw" className="object-cover" style={{ objectPosition: "45% 50%" }} />
+        {/* plăcuța „Rezervat” de pe masă */}
+        <div className="arch sticky top-28 aspect-square w-full bg-[#3b2f2a] shadow-[0_30px_70px_-35px_rgb(0_0_0/.9)]">
+          <Image src="/rezervat.jpg" alt={dict.home.riservato.replace(/\.$/, "")} fill priority sizes="(min-width: 1024px) 30vw, 0px" className="object-cover" />
         </div>
       </div>
     </div>
