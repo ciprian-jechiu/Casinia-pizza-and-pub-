@@ -108,7 +108,9 @@ export function CheckoutForm() {
     }
   }
 
-  if (done) {
+  // Pagina rămâne „în memorie” când navighezi pe site; dacă după o comandă trimisă clientul pune
+  // din nou produse în coș, trebuie să vadă formularul, nu mesajul de succes al comenzii vechi.
+  if (done && lines.length === 0) {
     return (
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-xl" role="status">
         <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden className="text-basilico">
