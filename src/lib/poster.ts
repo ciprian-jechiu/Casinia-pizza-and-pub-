@@ -161,14 +161,26 @@ export async function posterReport() {
 
 // ───────── trimiterea comenzii ─────────
 
-/** 069123456 → +37369123456; restul rămâne cum e (doar cifre și +). */
+/** 069123456 / 69123456 / 37369123456 → +37369123456 (Moldova); alte numere rămân doar cu cifre și +. */
 function phoneForPoster(raw: string) {
-  const p = raw.replace(/[^\d+]/g, "");
-  if (p.startsWith("+")) return p;
-  if (p.startsWith("373")) return `+${p}`;
-  if (p.startsWith("0")) return `+373${p.slice(1)}`;
-  return p;
+  const digits = raw.replace(/\D/g, "");
+  if (raw.trim().startsWith("+")) return `+${digits}`;
+  if (digits.startsWith("373") && digits.length === 11) return `+${digits}`;
+  if (digits.startsWith("0") && digits.length === 9) return `+373${digits.slice(1)}`;
+  if (digits.length === 8) return `+373${digits}`;
+  return digits.startsWith("00") ? `+${digits.slice(2)}` : `+${digits}`;
 }
+
+/** Formatele de telefon încercate, dacă Poster îl refuză pe primul. */
+function phoneVariants(raw: string) {
+  const intl = phoneForPoster(raw); // +37369123456
+  const d = intl.replace(/\D/g, ""); // 37369123456
+  const local = d.startsWith("373") ? `0${d.slice(3)}` : d; // 069123456
+  return [...new Set([intl, d, local, `+${d.slice(0, 3)} ${d.slice(3, 5)} ${d.slice(5, 8)} ${d.slice(8)}`])];
+}
+
+/** Telefonul pentru jurnal, cu cifrele din mijloc ascunse. */
+const maskPhone = (p: string) => p.replace(/(\+?\d{4})\d+(\d{2})/, "$1…$2");
 
 /** id-ul de pe rândul comenzii → id-ul produsului din meniul site-ului. */
 function baseId(lineId: string) {
@@ -273,16 +285,24 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
     ["json fără preț", asJson(false)],
   ];
   const errors: string[] = [];
-  for (const [label, payload] of attempts) {
-    try {
-      const res = await call<{ incoming_order_id?: number | string }>("incomingOrders.createIncomingOrder", { body: payload });
-      if (errors.length) console.warn(`[poster] #${shortNo} a mers cu varianta „${label}” după: ${errors.join(" || ")}`);
-      return res.incoming_order_id ?? null;
-    } catch (err) {
-      errors.push(`${label}: ${err instanceof Error ? err.message : String(err)}`);
+  for (const phone of phoneVariants(o.phone)) {
+    for (const [label, payload] of attempts) {
+      const withPhone = payload instanceof URLSearchParams ? new URLSearchParams(payload) : { ...payload };
+      if (withPhone instanceof URLSearchParams) withPhone.set("phone", phone);
+      else withPhone.phone = phone;
+      try {
+        const res = await call<{ incoming_order_id?: number | string }>("incomingOrders.createIncomingOrder", { body: withPhone });
+        if (errors.length) console.warn(`[poster] #${shortNo} a mers cu „${label}”, telefon ${maskPhone(phone)}, după: ${errors.join(" || ")}`);
+        return res.incoming_order_id ?? null;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        errors.push(`${label} / tel ${maskPhone(phone)}: ${msg}`);
+        // dacă problema e telefonul, nu are rost să schimbăm formatul corpului: trecem la alt format de telefon
+        if (/phone/i.test(msg)) break;
+      }
     }
   }
-  throw new Error(errors.join(" || "));
+  throw new Error(`(telefon introdus: ${o.phone.replace(/\d(?=\d{2})/g, "•")}) ${errors.join(" || ")}`);
 }
 
 /** Folosit de serverul de comenzi: dacă nu e configurat Poster, nu face nimic. */
