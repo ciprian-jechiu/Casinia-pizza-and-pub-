@@ -8,7 +8,8 @@ import { fill, useI18n } from "../I18nProvider";
 import { Field, errorText } from "./Field";
 import { cartTotals, hasDeliveryOnly, useCart } from "@/store/cart";
 import { menuById, menuImage } from "@/lib/menu";
-import { PROMO, promoFor } from "@/lib/promo";
+import { normalizeGifts, promoFor } from "@/lib/promo";
+import { GiftChooser } from "../GiftChooser";
 import { ChoiceList } from "../CartDrawer";
 import { formatPrice } from "@/lib/i18n";
 import { orderSlotsToday } from "@/lib/schedule";
@@ -19,7 +20,7 @@ type Errors = Partial<Record<"name" | "phone" | "address" | "time" | "items" | "
 
 export function CheckoutForm() {
   const { locale, dict } = useI18n();
-  const { lines, clear } = useCart();
+  const { lines, gifts, clear } = useCart();
   const hydrated = useHydrated();
   const [methodChoice, setMethod] = useState<"pickup" | "delivery">("pickup");
   // ofertele (combo-uri, pizza 3+1) se comandă doar cu livrare
@@ -37,7 +38,6 @@ export function CheckoutForm() {
 
   const { total } = cartTotals(lines);
   const promo = promoFor(lines);
-  const gift = menuById.get(PROMO.giftId);
   const belowMin = method === "delivery" && total < site.ordering.minOrderDelivery;
   // livrare gratuită în Stăuceni, 50 lei în afara Stăuceni
   const deliveryFee = method === "delivery" && zone === "outside" ? site.ordering.deliveryFeeOutside : 0;
@@ -67,7 +67,8 @@ export function CheckoutForm() {
       time: when === "scheduled" ? String(fd.get("time") ?? "") : undefined,
       payment,
       notes: String(fd.get("notes") ?? ""),
-      items: lines.map((l) => ({ id: l.id, qty: l.qty, ...(l.choices ? { choices: l.choices } : {}) })),
+      items: lines.map((l) => ({ id: l.id, qty: l.qty, ...(l.choices ? { choices: l.choices } : {}), ...(l.gift ? { gift: l.gift } : {}) })),
+      gifts: normalizeGifts(promo.gifts, gifts),
       company: String(fd.get("company") ?? ""),
     };
 
@@ -245,22 +246,13 @@ export function CheckoutForm() {
                   </div>
                   <span className="flex-1 text-sm">
                     <span className="text-crema-dim tabular-nums">{l.qty} ×</span> {it.name[locale]}
-                    {l.choices && <ChoiceList ids={l.choices} className="mt-0.5" />}
+                    {l.choices && <ChoiceList ids={l.choices} gift={l.gift} className="mt-0.5" />}
                   </span>
                   <span className="text-sm tabular-nums">{formatPrice(it.price * l.qty, locale)}</span>
                 </li>
               );
             })}
-          {hydrated && promo.gifts > 0 && gift && (
-            <li className="flex items-center gap-3 py-3">
-              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-ottone font-display text-xs font-semibold text-notte">3+1</span>
-              <span className="flex-1 text-sm">
-                <span className="text-crema-dim tabular-nums">{promo.gifts} ×</span> {gift.name[locale]}{" "}
-                <span className="text-ottone">· {dict.promo.giftLine}</span>
-              </span>
-              <span className="text-sm text-ottone">{dict.promo.free}</span>
-            </li>
-          )}
+          {hydrated && promo.gifts > 0 && <GiftChooser count={promo.gifts} />}
         </ul>
         {deliveryFee > 0 && (
           <div className="mt-4 space-y-1 border-t border-linia pt-4 text-sm">

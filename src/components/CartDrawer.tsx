@@ -9,8 +9,8 @@ import { cartTotals, useCart } from "@/store/cart";
 import { menuById, menuImage } from "@/lib/menu";
 import { formatPrice } from "@/lib/i18n";
 import { getLenis } from "./SmoothScroll";
-import { PromoBadge } from "./PromoBanner";
 import { PROMO, promoFor } from "@/lib/promo";
+import { GiftChooser } from "./GiftChooser";
 import { site } from "@/lib/site";
 
 export function CartDrawer() {
@@ -18,7 +18,6 @@ export function CartDrawer() {
   const { lines, open, setOpen, setQty, remove } = useCart();
   const { total } = cartTotals(lines);
   const promo = promoFor(lines);
-  const gift = menuById.get(PROMO.giftId);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -101,7 +100,7 @@ export function CartDrawer() {
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <p className="font-display text-xl leading-tight">{item.name[locale]}</p>
-                                {l.choices && <ChoiceList ids={l.choices} />}
+                                {l.choices && <ChoiceList ids={l.choices} gift={l.gift} />}
                               </div>
                               <p className="shrink-0 text-sm text-ottone tabular-nums">{formatPrice(item.price * l.qty, locale)}</p>
                             </div>
@@ -124,18 +123,7 @@ export function CartDrawer() {
                       );
                     })}
                   </AnimatePresence>
-                  {promo.gifts > 0 && gift && (
-                    <li className="flex items-center gap-4 py-4">
-                      <PromoBadge size="md" className="size-16" />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-display text-xl leading-tight">
-                          {promo.gifts} × {gift.name[locale]}
-                        </p>
-                        <p className="text-xs uppercase tracking-[0.18em] text-ottone">{dict.promo.giftLine}</p>
-                      </div>
-                      <p className="shrink-0 text-sm text-ottone">{dict.promo.free}</p>
-                    </li>
-                  )}
+                  {promo.gifts > 0 && <GiftChooser count={promo.gifts} />}
                 </ul>
                 <div className="border-t border-linia px-6 py-5">
                   {promo.pizzas > 0 && promo.toNext < PROMO.buy && (
@@ -164,12 +152,18 @@ export function CartDrawer() {
 }
 
 /** Pizzele alese în oferta 3+1, ex. „2 × Margherita, Carbonara, Pollo”. */
-export function ChoiceList({ ids, className = "" }: { ids: string[]; className?: string }) {
-  const { locale } = useI18n();
+export function ChoiceList({ ids, gift, className = "" }: { ids: string[]; gift?: string; className?: string }) {
+  const { locale, dict } = useI18n();
   const counts = new Map<string, number>();
   for (const id of ids) counts.set(id, (counts.get(id) ?? 0) + 1);
   const text = [...counts]
     .map(([id, n]) => `${n > 1 ? `${n} × ` : ""}${(menuById.get(id)?.name[locale] ?? id).replace(/^Pizza\s+/i, "")}`)
     .join(", ");
-  return <p className={`mt-1 text-xs leading-relaxed text-crema-dim ${className}`}>{text}</p>;
+  const giftName = gift ? (menuById.get(gift)?.name[locale] ?? gift).replace(/^Pizza\s+/i, "") : null;
+  return (
+    <p className={`mt-1 text-xs leading-relaxed text-crema-dim ${className}`}>
+      {text}
+      {giftName && <span className="text-ottone"> + {giftName} ({dict.promo.free})</span>}
+    </p>
+  );
 }

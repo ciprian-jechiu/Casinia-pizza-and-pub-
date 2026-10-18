@@ -12,6 +12,7 @@ import { useI18n } from "./I18nProvider";
 export function AddToCart({
   id,
   choices,
+  gift,
   disabled = false,
   onAdded,
   label,
@@ -21,6 +22,8 @@ export function AddToCart({
   id: string;
   /** pizzele alese pentru oferta 3+1 */
   choices?: string[];
+  /** pizza gratuită aleasă la pachetul 3+1 */
+  gift?: string;
   disabled?: boolean;
   onAdded?: () => void;
   label?: string;
@@ -34,7 +37,7 @@ export function AddToCart({
 
   const onClick = () => {
     if (disabled) return;
-    add(id, 1, choices);
+    add(id, 1, choices, gift);
     onAdded?.();
     setDone(true);
     window.setTimeout(() => setDone(false), 1400);

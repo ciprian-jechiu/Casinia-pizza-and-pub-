@@ -19,6 +19,8 @@ export const orderSchema = z
     method: z.enum(["pickup", "delivery"]),
     /** zona de livrare: Stăuceni (gratuit) sau în afara Stăuceni (taxă) */
     zone: z.enum(["stauceni", "outside"]).optional().default("stauceni"),
+    /** pizzele cadou alese (câte una la fiecare 3 pizza din coș) */
+    gifts: z.array(z.string().min(1).max(60)).max(40).optional().default([]),
     address: z.string().trim().max(240).optional().default(""),
     when: z.enum(["asap", "scheduled"]),
     time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
@@ -31,6 +33,8 @@ export const orderSchema = z
           qty: z.number().int().min(1).max(30),
           /** pizzele alese pentru oferta 3+1 */
           choices: z.array(z.string().min(1).max(60)).max(8).optional(),
+          /** pizza gratuită aleasă la pachetul 3+1 */
+          gift: z.string().min(1).max(60).optional(),
         }),
       )
       .min(1)

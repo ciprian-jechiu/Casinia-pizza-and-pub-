@@ -2,7 +2,7 @@ import { getStore, shortId, type OrderLine } from "@/lib/db";
 import { json, rateLimited } from "@/lib/api";
 import { menuById } from "@/lib/menu";
 import { notifyOrder } from "@/lib/notify";
-import { PROMO, promoFor } from "@/lib/promo";
+import { normalizeGifts, promoFor } from "@/lib/promo";
 import { orderSlotsToday } from "@/lib/schedule";
 import { site } from "@/lib/site";
 import { orderSchema } from "@/lib/validation";
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
   // Prețurile se calculează pe server, din meniu — nu ne încredem în ce trimite browserul.
   const lines: OrderLine[] = [];
-  for (const { id, qty, choices } of o.items) {
+  for (const { id, qty, choices, gift } of o.items) {
     const item = menuById.get(id);
     if (!item) return json({ error: "invalid", fields: [{ path: "items", code: "unknown_item" }] }, 400);
     // ofertele se comandă doar cu livrare
@@ -35,19 +35,27 @@ export async function POST(req: Request) {
       if (!choices || choices.length !== rule.count || choices.some((c) => !rule.from.includes(c))) {
         return json({ error: "invalid", fields: [{ path: "items", code: "bad_choices" }] }, 400);
       }
+      // pizza gratuită: doar una dintre variantele permise (Margherita, Pollo e Funghi, B.B.Q)
+      const giftFrom = item.offer?.gift;
+      if (giftFrom && (!gift || !giftFrom.includes(gift))) {
+        return json({ error: "invalid", fields: [{ path: "items", code: "bad_choices" }] }, 400);
+      }
       const counts = new Map<string, number>();
       for (const c of choices) counts.set(c, (counts.get(c) ?? 0) + 1);
       name += ": " + [...counts].map(([c, n]) => `${n > 1 ? `${n}× ` : ""}${menuById.get(c)!.name.ro}`).join(", ");
+      if (gift) name += ` + gratis ${menuById.get(gift)!.name.ro}`;
     }
-    lines.push({ id: rule ? `${id}:${[...choices!].sort().join(",")}` : id, name, qty, price: item.price });
+    lines.push({ id: rule ? `${id}:${[...choices!].sort().join(",")}${gift ? `+${gift}` : ""}` : id, name, qty, price: item.price });
   }
   const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0);
 
-  // Oferta 3+1: la fiecare 3 pizza, o Margherita cadou (0 lei), ca bucătăria s-o vadă pe bon.
+  // Oferta 3+1: la fiecare 3 pizza, o pizza cadou la alegere (0 lei), ca bucătăria s-o vadă pe bon.
   const { gifts } = promoFor(o.items);
-  if (gifts > 0) {
-    const gift = menuById.get(PROMO.giftId);
-    if (gift) lines.push({ id: `${PROMO.giftId}-cadou`, name: `${gift.name.ro} (cadou 3+1)`, qty: gifts, price: 0 });
+  const giftCounts = new Map<string, number>();
+  for (const g of normalizeGifts(gifts, o.gifts)) giftCounts.set(g, (giftCounts.get(g) ?? 0) + 1);
+  for (const [g, n] of giftCounts) {
+    const gi = menuById.get(g);
+    if (gi) lines.push({ id: `${g}-cadou`, name: `${gi.name.ro} (cadou 3+1)`, qty: n, price: 0 });
   }
 
   if (o.method === "delivery" && subtotal < site.ordering.minOrderDelivery) {

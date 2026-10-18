@@ -22,6 +22,8 @@ export type MenuItem = {
     deliveryOnly: boolean;
     /** clientul alege `count` pizza din lista `from` (pot fi și repetate) */
     choose?: { count: number; from: string[] };
+    /** pizza gratuită, aleasă de client din această listă */
+    gift?: string[];
   };
 };
 
@@ -94,16 +96,17 @@ export const menu: MenuItem[] = [
     category: "oferte",
     name: { ro: "Pizza 3+1 gratis", ru: "Пицца 3+1 в подарок", en: "Pizza 3+1 free" },
     description: {
-      ro: "Alegi 4 pizza: plătești 3, a 4-a e gratis",
-      ru: "Выберите 4 пиццы: платите за 3, четвёртая — бесплатно",
-      en: "Pick 4 pizzas: pay for 3, the 4th is free",
+      ro: "Alegi 3 pizza, iar a 4-a e gratis: Margherita, Pollo e Funghi sau B.B.Q",
+      ru: "Выберите 3 пиццы, а четвёртая — бесплатно: Маргарита, Полло э Фунги или B.B.Q",
+      en: "Pick 3 pizzas and get the 4th free: Margherita, Pollo e Funghi or B.B.Q",
     },
     price: 465,
     image: "/oferte/pizza-3-plus-1.jpg",
     offer: {
       deliveryOnly: true,
+      gift: ["pizza-margherita", "pizza-pollo", "pizza-bbq"],
       choose: {
-        count: 4,
+        count: 3,
         from: [
           "pizza-margherita",
           "pizza-quattro-formaggi",
@@ -251,7 +254,7 @@ export const menu: MenuItem[] = [
   {
     id: "pizza-pollo",
     category: "pizza",
-    name: { ro: "Pizza Pollo", ru: "Пицца Полло", en: "Pizza Pollo" },
+    name: { ro: "Pizza Pollo e Funghi", ru: "Пицца Полло э Фунги", en: "Pizza Pollo e Funghi" },
     description: {
       ro: "File de pui, ciuperci, mozzarella, parmigiano",
       ru: "Куриное филе, грибы, моцарелла, пармиджано",

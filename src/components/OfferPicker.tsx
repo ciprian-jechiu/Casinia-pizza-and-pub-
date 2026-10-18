@@ -16,7 +16,9 @@ export function OfferPicker({ item, compact = false, className = "" }: { item: M
   const { locale, dict } = useI18n();
   const t = dict.offers;
   const rule = item.offer!.choose!;
+  const giftFrom = item.offer?.gift ?? [];
   const [open, setOpen] = useState(false);
+  const [gift, setGift] = useState<string | null>(null);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const panel = useRef<HTMLDivElement>(null);
 
@@ -94,7 +96,9 @@ export function OfferPicker({ item, compact = false, className = "" }: { item: M
                 </button>
               </div>
 
-              <ul className="grid flex-1 gap-1 overflow-y-auto px-4 py-3 sm:grid-cols-2">
+              <div className="flex-1 overflow-y-auto px-4 py-3">
+              <p className="eyebrow px-2 pb-2 pt-1 text-crema-dim">{t.paidTitle}</p>
+              <ul className="grid gap-1 sm:grid-cols-2">
                 {rule.from.map((id) => {
                   const p = menuById.get(id);
                   if (!p) return null;
@@ -118,6 +122,37 @@ export function OfferPicker({ item, compact = false, className = "" }: { item: M
                   );
                 })}
               </ul>
+              {giftFrom.length > 0 && (
+                <>
+                  <p className="eyebrow px-2 pb-2 pt-5 text-ottone">{t.giftTitle}</p>
+                  <div className="grid grid-cols-3 gap-2 px-1 pb-1" role="radiogroup" aria-label={t.giftTitle}>
+                    {giftFrom.map((id) => {
+                      const g = menuById.get(id);
+                      if (!g) return null;
+                      const on = gift === id;
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          onClick={() => setGift(id)}
+                          className={`flex flex-col items-center gap-2 rounded-2xl border p-3 text-center text-sm leading-tight transition-colors ${
+                            on ? "border-ottone bg-ottone/15 text-crema" : "border-linia text-crema-dim hover:border-crema-dim"
+                          }`}
+                        >
+                          <span className="arch relative block size-14 bg-legno-2">
+                            {g.image && <Image src={menuImage(g.image, 200)} alt="" fill sizes="56px" className="object-cover" />}
+                          </span>
+                          {g.name[locale]}
+                          <span className="text-xs text-ottone">{dict.promo.free}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+              </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-linia px-6 py-4">
                 <p className="text-sm" aria-live="polite">
@@ -127,12 +162,14 @@ export function OfferPicker({ item, compact = false, className = "" }: { item: M
                 <AddToCart
                   id={item.id}
                   choices={choices}
-                  disabled={left !== 0}
+                  gift={gift ?? undefined}
+                  disabled={left !== 0 || (giftFrom.length > 0 && !gift)}
                   label={t.add}
                   onAdded={() =>
                     window.setTimeout(() => {
                       setOpen(false);
                       setCounts({});
+                      setGift(null);
                     }, 700)
                   }
                 />
