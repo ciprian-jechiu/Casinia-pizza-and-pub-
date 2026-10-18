@@ -72,6 +72,19 @@ Instalare (o singură dată, ~5 minute):
 orice cerere, iar tabelul rămâne privat (îl vede doar cine are acces în Google Drive).
 Dacă modifici `Code.gs`: Implementare → Gestionează implementările → ✏️ → Versiune nouă.
 
+## Poster — comenzile ajung pe casă
+
+Cu `POSTER_TOKEN` setat (tokenul „Personal integration” din Poster → Access → Integrations),
+fiecare comandă de pe site e trimisă pe terminal ca **comandă online** (Orders → status Online → Accept).
+
+- Produsele se potrivesc automat după nume (fără diacritice; „Pizza” nu contează). Ce nu se
+  potrivește nu se pierde: apare în comentariul comenzii pe casă. Potriviri manuale: `POSTER_PRODUCT_MAP`.
+- Pe casă ajung: produsele cu prețurile de pe site, pizzele cadou (0 lei), livrarea în afara Stăuceni
+  (produsul „Livrare în afara Stăuceni”, dacă există), telefonul, numele, adresa și un comentariu
+  cu ora, plata, totalul și detaliile ofertei 3+1.
+- Verificare: `/ro/admin` → tabul **Poster** arată localul și ce produse s-au potrivit.
+- Comanda e salvată și în tabel/admin; dacă Poster nu răspunde, comanda nu se pierde.
+
 ## Structură
 
 ```

@@ -5,6 +5,7 @@ import { useI18n } from "./I18nProvider";
 import { formatPrice } from "@/lib/i18n";
 import type { OrderRecord, ReservationRecord } from "@/lib/db";
 import type { Status } from "@/lib/validation";
+import { PosterStatus } from "./PosterStatus";
 
 const KEY = "casinia-admin-key";
 const statuses: Status[] = ["new", "confirmed", "done", "cancelled"];
@@ -19,7 +20,7 @@ export function AdminPanel() {
   const { locale, dict } = useI18n();
   const [key, setKey] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<"orders" | "reservations">("orders");
+  const [tab, setTab] = useState<"orders" | "reservations" | "poster">("orders");
   const [data, setData] = useState<{ orders: OrderRecord[]; reservations: ReservationRecord[] } | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -147,11 +148,14 @@ export function AdminPanel() {
             {newCount(data[t]) > 0 && <span className="ml-2 rounded-full bg-pomodoro px-2 text-xs text-crema">{newCount(data[t])}</span>}
           </button>
         ))}
+        <button type="button" onClick={() => setTab("poster")} aria-pressed={tab === "poster"} className="chip">Poster</button>
         <button type="button" className="chip ml-auto" onClick={() => load(key)} disabled={loading}>{dict.admin.refresh}</button>
         <button type="button" className="chip" onClick={() => { sessionStorage.removeItem(KEY); setKey(null); setData(null); }}>{dict.admin.logout}</button>
       </div>
 
-      {tab === "orders" ? (
+      {tab === "poster" ? (
+        <PosterStatus adminKey={key} />
+      ) : tab === "orders" ? (
         data.orders.length === 0 ? (
           <p className="text-crema-dim">{dict.admin.none}</p>
         ) : (

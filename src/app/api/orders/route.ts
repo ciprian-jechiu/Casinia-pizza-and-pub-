@@ -1,7 +1,8 @@
-import { getStore, shortId, type OrderLine } from "@/lib/db";
+import { getStore, shortId, type OrderLine, type OrderRecord } from "@/lib/db";
 import { json, rateLimited } from "@/lib/api";
 import { menuById } from "@/lib/menu";
 import { notifyOrder } from "@/lib/notify";
+import { forwardToPoster, posterEnabled } from "@/lib/poster";
 import { normalizeGifts, promoFor } from "@/lib/promo";
 import { orderSlotsToday } from "@/lib/schedule";
 import { site } from "@/lib/site";
@@ -71,10 +72,11 @@ export async function POST(req: Request) {
   }
 
   const store = getStore();
-  if (!store) return json({ error: "unavailable" }, 503);
+  // fără bază de date, comanda poate merge totuși direct pe casa Poster
+  if (!store && !posterEnabled()) return json({ error: "unavailable" }, 503);
 
   try {
-    const rec = await store.createOrder({
+    const data = {
       locale: o.locale,
       name: o.name,
       phone: o.phone,
@@ -85,8 +87,11 @@ export async function POST(req: Request) {
       notes: o.notes || null,
       items: lines,
       total,
-    });
-    await notifyOrder(rec);
+    };
+    const rec: OrderRecord = store
+      ? await store.createOrder(data)
+      : { ...data, id: crypto.randomUUID(), created_at: new Date().toISOString(), status: "new" };
+    await Promise.all([notifyOrder(rec), forwardToPoster(rec, shortId(rec.id))]);
     return json({ ok: true, id: shortId(rec.id), total }, 201);
   } catch (err) {
     console.error("[orders] insert failed", err);
