@@ -17,8 +17,9 @@ export function rateLimited(req: Request, limit = 6, windowMs = 60_000) {
 export const json = (data: unknown, status = 200) => NextResponse.json(data, { status });
 
 export function isAdmin(req: Request) {
-  const expected = process.env.ADMIN_PASSWORD ?? (process.env.NODE_ENV !== "production" ? "casinia-dev" : "");
-  const given = req.headers.get("x-admin-key") ?? "";
+  // spațiile de la capete (copiate din greșeală) nu contează
+  const expected = (process.env.ADMIN_PASSWORD ?? (process.env.NODE_ENV !== "production" ? "casinia-dev" : "")).trim();
+  const given = (req.headers.get("x-admin-key") ?? "").trim();
   if (!expected || !given) return false;
   const a = Buffer.from(given);
   const b = Buffer.from(expected);

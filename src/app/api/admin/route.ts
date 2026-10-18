@@ -9,9 +9,10 @@ export async function GET(req: Request) {
     return json({ error: "unauthorized" }, 401);
   }
   const store = getStore();
-  if (!store) return json({ error: "unavailable" }, 503);
+  // fără bază de date panoul se deschide totuși (ex. pentru tabul Poster), cu liste goale
+  if (!store) return json({ orders: [], reservations: [], storage: false });
   const [orders, reservations] = await Promise.all([store.listOrders(), store.listReservations()]);
-  return json({ orders, reservations });
+  return json({ orders, reservations, storage: true });
 }
 
 const patchSchema = z.object({

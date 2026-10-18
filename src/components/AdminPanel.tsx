@@ -21,7 +21,7 @@ export function AdminPanel() {
   const [key, setKey] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"orders" | "reservations" | "poster">("orders");
-  const [data, setData] = useState<{ orders: OrderRecord[]; reservations: ReservationRecord[] } | null>(null);
+  const [data, setData] = useState<{ orders: OrderRecord[]; reservations: ReservationRecord[]; storage?: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -153,6 +153,12 @@ export function AdminPanel() {
         <button type="button" className="chip" onClick={() => { sessionStorage.removeItem(KEY); setKey(null); setData(null); }}>{dict.admin.logout}</button>
       </div>
 
+      {data.storage === false && tab !== "poster" && (
+        <p className="mb-6 rounded-xl border border-ottone/40 bg-legno/60 px-4 py-3 text-sm text-crema-dim">
+          Comenzile și rezervările nu se salvează încă: lipsește legătura cu tabelul Google (GOOGLE_SHEETS_URL și GOOGLE_SHEETS_SECRET pe Vercel).
+          Comenzile ajung totuși pe casa Poster, dacă e conectată.
+        </p>
+      )}
       {tab === "poster" ? (
         <PosterStatus adminKey={key} />
       ) : tab === "orders" ? (
