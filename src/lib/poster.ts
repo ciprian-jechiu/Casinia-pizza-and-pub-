@@ -1,5 +1,5 @@
 import "server-only";
-import { menu } from "./menu";
+import { menu, menuById } from "./menu";
 import type { OrderRecord } from "./db";
 
 /**
@@ -66,6 +66,34 @@ const norm = (s: string) =>
     .replace(/[^a-z0-9а-яё]+/g, " ")
     .trim();
 
+/**
+ * Potriviri verificate în Poster-ul Casinia (produsele cu nume diferit față de site).
+ * POSTER_PRODUCT_MAP de pe server le poate suprascrie.
+ */
+const DEFAULT_MAP: Record<string, string> = {
+  "pizza-pepperoni": "19", // PEPERONI
+  "pizza-pollo": "118", // PIZZA POLO
+  "double-cheese-burger": "29", // DOUBLE CHESSE BURGER
+  "burger-krispy": "125", // Burger Kryspy
+  "aripi-bbq": "40", // Aripi B.B.Q
+  "aripi-krispy": "13", // ARIPI DE PUI KRISPY
+  "nuggets-copii": "128", // Nughete copii
+  "cartofi-wedges": "11", // CARTOFI WEGES
+  "cartof-ca-acasa": "189", // Cartof ca acasa (FAST FOOD)
+  "cartof-ca-acasa-bacon": "190", // Cartof ca acasa cu bacon
+  "piure-cartof": "186", // Piureu de cartof
+  "piure-broccoli": "191", // Piure din brocolli
+  pepsi: "154", // Pepsi Cola 0.25l — Pepsi-ul cadou din combo-uri
+};
+
+/** Combo-urile nu există ca produse în Poster: pe casă pleacă burgerul + cartofii fries + Pepsi (cadou). */
+const COMBOS: Record<string, { burger: string; side: string; drink: string }> = {
+  "combo-burger-clasic": { burger: "burger-clasic", side: "cartofi-fries", drink: "pepsi" },
+  "combo-cheeseburger": { burger: "cheeseburger-clasic", side: "cartofi-fries", drink: "pepsi" },
+  "combo-burger-krispy": { burger: "burger-krispy", side: "cartofi-fries", drink: "pepsi" },
+  "combo-double-cheeseburger": { burger: "double-cheese-burger", side: "cartofi-fries", drink: "pepsi" },
+};
+
 /** Produse speciale de pe comandă (nu sunt în meniul site-ului ca atare). */
 const EXTRA_NAMES: Record<string, string[]> = {
   livrare: ["livrare in afara stauceni", "livrare", "доставка"],
@@ -78,8 +106,9 @@ export async function productMap(): Promise<Map<string, string>> {
   const byName = new Map<string, string>();
   for (const p of visible) byName.set(norm(p.product_name), String(p.product_id));
 
-  const map = new Map<string, string>();
+  const map = new Map<string, string>(Object.entries(DEFAULT_MAP));
   for (const item of menu) {
+    if (map.has(item.id)) continue;
     const names = [item.name.ro, item.name.ru, item.name.en].map(norm);
     const hit = names.map((n) => byName.get(n)).find(Boolean);
     if (hit) map.set(item.id, hit);
@@ -107,6 +136,14 @@ export async function posterReport() {
     spots: spots.map((s) => ({ id: String(s.spot_id), name: s.spot_name ?? s.name ?? "", address: s.spot_adress ?? s.address ?? "" })),
     spotId: await spotId(),
     items: [...menu.map((m) => ({ id: m.id, name: m.name.ro })), { id: "livrare", name: "Livrare în afara Stăuceni (50 lei)" }].map((m) => {
+      const combo = COMBOS[m.id];
+      if (combo) {
+        const parts = [combo.burger, combo.side, combo.drink].map((x) => nameOf.get(map.get(x) ?? "") ?? "?");
+        return { id: m.id, name: m.name, posterId: "combo", posterName: `se desface: ${parts.join(" + ")} (Pepsi 0 lei)` };
+      }
+      if (menuById.get(m.id)?.offer?.choose) {
+        return { id: m.id, name: m.name, posterId: "bundle", posterName: "se desface: cele 3 pizza alese (465 lei împărțiți) + pizza gratis (0 lei)" };
+      }
       const pid = map.get(m.id);
       return { id: m.id, name: m.name, posterId: pid ?? null, posterName: pid ? (nameOf.get(pid) ?? null) : null };
     }),
@@ -145,20 +182,52 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
 
   const missing: string[] = [];
   const details: string[] = [];
-  let n = 0;
+  const out: { pid: string; count: number; price: number }[] = [];
+  const push = (siteId: string, count: number, price: number, label: string) => {
+    const pid = map.get(siteId);
+    if (pid) out.push({ pid, count, price });
+    else missing.push(`${count}× ${label} — ${price * count} lei`);
+  };
+
   for (const line of o.items) {
-    const pid = map.get(baseId(line.id));
-    // pachetul 3+1 și cadourile au detalii (ce pizza) — le punem și în comentariu
-    if (line.id.includes(":") || line.id.endsWith("-cadou")) details.push(`${line.qty}× ${line.name}`);
-    if (!pid) {
-      missing.push(`${line.qty}× ${line.name} — ${line.price * line.qty} lei`);
-      continue;
+    const id = baseId(line.id);
+    const combo = COMBOS[id];
+    const item = menuById.get(id);
+    if (combo) {
+      // burger la prețul lui, cartofii cu restul până la prețul combo-ului, Pepsi cadou
+      const burgerPrice = Math.min(menuById.get(combo.burger)?.price ?? line.price, line.price);
+      push(combo.burger, line.qty, burgerPrice, menuById.get(combo.burger)?.name.ro ?? combo.burger);
+      push(combo.side, line.qty, line.price - burgerPrice, "Cartofi fries (combo)");
+      push(combo.drink, line.qty, 0, "Pepsi (cadou combo)");
+      details.push(`${line.qty}× ${line.name}`);
+    } else if (item?.offer?.choose && line.id.includes(":")) {
+      // pachetul 3+1: id-ul rândului e „pizza-3-plus-1:a,b,c+gift”
+      const [, rest = ""] = line.id.split(":");
+      const [choiceStr = "", gift] = rest.split("+");
+      const choices = choiceStr.split(",").filter(Boolean);
+      const base = choices.map((c) => menuById.get(c)?.price ?? 0);
+      const sum = base.reduce((a, b) => a + b, 0) || 1;
+      // cei 465 lei se împart proporțional pe cele 3 pizza (ultima ia restul, ca totalul să fie exact)
+      let left = line.price;
+      choices.forEach((c, i) => {
+        const p = i === choices.length - 1 ? left : Math.round((base[i] * line.price) / sum);
+        left -= p;
+        push(c, line.qty, p, menuById.get(c)?.name.ro ?? c);
+      });
+      if (gift) push(gift, line.qty, 0, `${menuById.get(gift)?.name.ro ?? gift} (gratis 3+1)`);
+      details.push(`${line.qty}× ${line.name}`);
+    } else {
+      if (line.id.endsWith("-cadou")) details.push(`${line.qty}× ${line.name}`);
+      push(id, line.qty, line.price, line.name);
     }
-    body.set(`products[${n}][product_id]`, pid);
-    body.set(`products[${n}][count]`, String(line.qty));
-    body.set(`products[${n}][price]`, String(Math.round(line.price * 100))); // în bani (kopecks)
-    n++;
   }
+
+  out.forEach((p, n) => {
+    body.set(`products[${n}][product_id]`, p.pid);
+    body.set(`products[${n}][count]`, String(p.count));
+    body.set(`products[${n}][price]`, String(Math.round(p.price * 100))); // în bani (kopecks)
+  });
+  const n = out.length;
 
   const comment = [
     `Site #${shortNo}`,
