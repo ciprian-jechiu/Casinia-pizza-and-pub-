@@ -26,6 +26,7 @@ export function CheckoutForm() {
   const deliveryOnly = hasDeliveryOnly(lines);
   const method = deliveryOnly ? "delivery" : methodChoice;
   const [when, setWhen] = useState<"asap" | "scheduled">("asap");
+  const [zone, setZone] = useState<"stauceni" | "outside">("stauceni");
   const [payment, setPayment] = useState<"cash" | "card">("cash");
   const [errors, setErrors] = useState<Errors>({});
   const [sending, setSending] = useState(false);
@@ -38,6 +39,10 @@ export function CheckoutForm() {
   const promo = promoFor(lines);
   const gift = menuById.get(PROMO.giftId);
   const belowMin = method === "delivery" && total < site.ordering.minOrderDelivery;
+  // livrare gratuită în Stăuceni, 50 lei în afara Stăuceni
+  const deliveryFee = method === "delivery" && zone === "outside" ? site.ordering.deliveryFeeOutside : 0;
+  const grandTotal = total + deliveryFee;
+  const feeText = formatPrice(site.ordering.deliveryFeeOutside, locale);
   const errMap = useMemo(
     () => ({
       ...dict.errors,
@@ -56,6 +61,7 @@ export function CheckoutForm() {
       name: String(fd.get("name") ?? ""),
       phone: String(fd.get("phone") ?? ""),
       method,
+      zone,
       address: String(fd.get("address") ?? ""),
       when,
       time: when === "scheduled" ? String(fd.get("time") ?? "") : undefined,
@@ -161,8 +167,21 @@ export function CheckoutForm() {
 
         <AnimatePresence initial={false}>
           {method === "delivery" && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-              <Field id="address" label={dict.checkout.address} error={errors.address} hint={dict.checkout.deliveryNote}>
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="space-y-6 overflow-hidden">
+              <fieldset>
+                <legend className="mb-3 text-sm text-crema-dim">{dict.checkout.zone}</legend>
+                <div className="flex flex-wrap gap-2" role="radiogroup">
+                  {(["stauceni", "outside"] as const).map((z) => (
+                    <label key={z} className="chip">
+                      <input type="radio" name="zone" value={z} checked={zone === z} onChange={() => setZone(z)} className="sr-only" />
+                      {z === "stauceni" ? dict.checkout.zoneStauceni : dict.checkout.zoneOutside}
+                      <span className="ml-2 opacity-70">{z === "stauceni" ? dict.checkout.zoneFree : `+${feeText}`}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-3 text-sm text-crema-dim">{dict.checkout.deliveryNote.replace("{fee}", feeText)}</p>
+              </fieldset>
+              <Field id="address" label={dict.checkout.address} error={errors.address}>
                 <input id="address" name="address" autoComplete="street-address" placeholder={dict.checkout.addressPlaceholder} className="field" aria-invalid={!!errors.address} />
               </Field>
             </motion.div>
@@ -243,9 +262,21 @@ export function CheckoutForm() {
             </li>
           )}
         </ul>
+        {deliveryFee > 0 && (
+          <div className="mt-4 space-y-1 border-t border-linia pt-4 text-sm">
+            <div className="flex justify-between text-crema-dim">
+              <span>{dict.checkout.subtotal}</span>
+              <span className="tabular-nums">{formatPrice(total, locale)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>{dict.checkout.deliveryFeeLine}</span>
+              <span className="tabular-nums">{formatPrice(deliveryFee, locale)}</span>
+            </div>
+          </div>
+        )}
         <div className="mt-4 flex items-baseline justify-between border-t border-linia pt-4">
           <span className="text-crema-dim">{dict.checkout.total}</span>
-          <span className="font-display text-4xl text-ottone tabular-nums">{hydrated ? formatPrice(total, locale) : "—"}</span>
+          <span className="font-display text-4xl text-ottone tabular-nums">{hydrated ? formatPrice(grandTotal, locale) : "—"}</span>
         </div>
         {belowMin && (
           <p role="alert" className="mt-3 text-sm text-errore">

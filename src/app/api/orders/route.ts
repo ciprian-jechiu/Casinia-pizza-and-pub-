@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     }
     lines.push({ id: rule ? `${id}:${[...choices!].sort().join(",")}` : id, name, qty, price: item.price });
   }
-  const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
+  const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0);
 
   // Oferta 3+1: la fiecare 3 pizza, o Margherita cadou (0 lei), ca bucătăria s-o vadă pe bon.
   const { gifts } = promoFor(o.items);
@@ -50,9 +50,14 @@ export async function POST(req: Request) {
     if (gift) lines.push({ id: `${PROMO.giftId}-cadou`, name: `${gift.name.ro} (cadou 3+1)`, qty: gifts, price: 0 });
   }
 
-  if (o.method === "delivery" && total < site.ordering.minOrderDelivery) {
+  if (o.method === "delivery" && subtotal < site.ordering.minOrderDelivery) {
     return json({ error: "invalid", fields: [{ path: "items", code: "min_order" }] }, 400);
   }
+  // livrarea în afara Stăuceni costă 50 lei — apare ca rând separat pe comandă (bon, tabel, Telegram)
+  if (o.method === "delivery" && o.zone === "outside") {
+    lines.push({ id: "livrare", name: "Livrare în afara Stăuceni", qty: 1, price: site.ordering.deliveryFeeOutside });
+  }
+  const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
   if (o.when === "scheduled" && !orderSlotsToday().includes(o.time!)) {
     return json({ error: "invalid", fields: [{ path: "time", code: "time" }] }, 400);
   }

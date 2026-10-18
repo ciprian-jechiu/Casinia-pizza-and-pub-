@@ -17,6 +17,8 @@ export const orderSchema = z
     name: nameSchema,
     phone: phoneSchema,
     method: z.enum(["pickup", "delivery"]),
+    /** zona de livrare: Stăuceni (gratuit) sau în afara Stăuceni (taxă) */
+    zone: z.enum(["stauceni", "outside"]).optional().default("stauceni"),
     address: z.string().trim().max(240).optional().default(""),
     when: z.enum(["asap", "scheduled"]),
     time: z.string().regex(/^\d{2}:\d{2}$/).optional(),

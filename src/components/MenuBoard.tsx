@@ -133,6 +133,9 @@ function OffersGrid({ items }: { items: MenuItem[] }) {
           <path d="M3 7h11v9H3zM14 10h4l3 3v3h-7M7.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM17.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
         </svg>
         {dict.offers.lead} <span className="text-crema">{site.ordering.deliveryZones.join(" · ")}</span>
+        <span className="basis-full text-crema-dim">
+          {dict.checkout.deliveryNote.replace("{fee}", formatPrice(site.ordering.deliveryFeeOutside, locale))}
+        </span>
       </p>
       <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((it) => {

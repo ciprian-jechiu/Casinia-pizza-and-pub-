@@ -11,6 +11,7 @@ import { formatPrice } from "@/lib/i18n";
 import { getLenis } from "./SmoothScroll";
 import { PromoBadge } from "./PromoBanner";
 import { PROMO, promoFor } from "@/lib/promo";
+import { site } from "@/lib/site";
 
 export function CartDrawer() {
   const { locale, dict } = useI18n();
@@ -146,6 +147,9 @@ export function CartDrawer() {
                     <span className="text-crema-dim">{dict.cart.subtotal}</span>
                     <span className="font-display text-3xl text-ottone tabular-nums">{formatPrice(total, locale)}</span>
                   </div>
+                  <p className="mb-4 text-xs leading-relaxed text-crema-dim">
+                    {dict.checkout.deliveryNote.replace("{fee}", formatPrice(site.ordering.deliveryFeeOutside, locale))}
+                  </p>
                   <Link href={`/${locale}/comanda`} onClick={() => setOpen(false)} className="btn btn-brass w-full">
                     {dict.cart.checkout}
                   </Link>

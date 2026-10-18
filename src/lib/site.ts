@@ -44,6 +44,8 @@ export const site = {
     /** TODO: de confirmat zona și costul livrării cu proprietarul */
     deliveryEnabled: true,
     minOrderDelivery: 150,
+    /** livrare gratuită în Stăuceni; în afara Stăuceni costă 50 lei */
+    deliveryFeeOutside: 50,
     /** localitățile din afișele cu oferte */
     deliveryZones: ["Stăuceni", "Cricova", "Ciorescu", "Măgdăcești"],
   },
