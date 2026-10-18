@@ -1,5 +1,6 @@
 import "server-only";
 import { menu, menuById } from "./menu";
+import { site } from "./site";
 import type { OrderRecord } from "./db";
 
 /**
@@ -242,6 +243,17 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
     }
   }
 
+  // Poster nu acceptă același produs de două ori („products cannot be duplicated”):
+  // rândurile cu același produs se unesc — cantitățile se adună, prețul devine media, totalul rămâne același.
+  const merged = new Map<string, { pid: string; count: number; totalBani: number }>();
+  for (const p of out) {
+    const m = merged.get(p.pid) ?? { pid: p.pid, count: 0, totalBani: 0 };
+    m.count += p.count;
+    m.totalBani += Math.round(p.price * 100) * p.count;
+    merged.set(p.pid, m);
+  }
+  out.length = 0;
+  for (const m of merged.values()) out.push({ pid: m.pid, count: m.count, price: m.totalBani / m.count / 100 });
   const n = out.length;
 
   const comment = [
@@ -285,7 +297,11 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
     ["json fără preț", asJson(false)],
   ];
   const errors: string[] = [];
-  for (const phone of phoneVariants(o.phone)) {
+  // ultima variantă: dacă Poster refuză orice format al numărului clientului, comanda pleacă
+  // pe numărul restaurantului (telefonul real al clientului e oricum în comentariu)
+  const phones = [...phoneVariants(o.phone), phoneForPoster(site.phone)];
+  for (const phone of phones) {
+    let phoneRejected = false;
     for (const [label, payload] of attempts) {
       const withPhone = payload instanceof URLSearchParams ? new URLSearchParams(payload) : { ...payload };
       if (withPhone instanceof URLSearchParams) withPhone.set("phone", phone);
@@ -298,23 +314,35 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
         const msg = err instanceof Error ? err.message : String(err);
         errors.push(`${label} / tel ${maskPhone(phone)}: ${msg}`);
         // dacă problema e telefonul, nu are rost să schimbăm formatul corpului: trecem la alt format de telefon
-        if (/phone/i.test(msg)) break;
+        if (/phone/i.test(msg)) {
+          phoneRejected = true;
+          break;
+        }
       }
     }
+    // altă problemă decât telefonul: alte numere nu ajută
+    if (!phoneRejected) break;
   }
   throw new Error(`(telefon introdus: ${o.phone.replace(/\d(?=\d{2})/g, "•")}) ${errors.join(" || ")}`);
 }
 
-/** Folosit de serverul de comenzi: dacă nu e configurat Poster, nu face nimic. */
-export async function forwardToPoster(o: OrderRecord, shortNo: string) {
-  if (!posterEnabled()) return;
+/**
+ * Folosit de serverul de comenzi. Întoarce true dacă comanda e pe casă (sau Poster nu e folosit pentru ea),
+ * false dacă trimiterea a eșuat — atunci serverul nu are voie să-i spună clientului că a mers.
+ */
+export async function forwardToPoster(o: OrderRecord, shortNo: string): Promise<boolean> {
+  if (!posterEnabled()) return true;
   // pe casă ajung toate comenzile (livrare și ridicare); POSTER_ONLY_DELIVERY=true le-ar limita la livrare
-  if (o.method !== "delivery" && process.env.POSTER_ONLY_DELIVERY === "true") return;
-  try {
-    const id = await sendOrderToPoster(o, shortNo);
-    console.info(`[poster] comanda #${shortNo} trimisă pe casă (incoming_order_id=${id})`);
-  } catch (err) {
-    console.error(`[poster] comanda #${shortNo} NU a ajuns pe casă`, err);
+  if (o.method !== "delivery" && process.env.POSTER_ONLY_DELIVERY === "true") return true;
+  // o a doua rundă completă, pentru căderi scurte de rețea
+  for (let round = 1; round <= 2; round++) {
+    try {
+      const id = await sendOrderToPoster(o, shortNo);
+      console.info(`[poster] comanda #${shortNo} trimisă pe casă (incoming_order_id=${id})`);
+      return true;
+    } catch (err) {
+      console.error(`[poster] comanda #${shortNo} NU a ajuns pe casă (încercarea ${round})`, err);
+    }
   }
+  return false;
 }
-

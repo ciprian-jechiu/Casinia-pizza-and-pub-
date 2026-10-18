@@ -91,7 +91,10 @@ export async function POST(req: Request) {
     const rec: OrderRecord = store
       ? await store.createOrder(data)
       : { ...data, id: crypto.randomUUID(), created_at: new Date().toISOString(), status: "new" };
-    await Promise.all([notifyOrder(rec), forwardToPoster(rec, shortId(rec.id))]);
+    const [, onTill] = await Promise.all([notifyOrder(rec), forwardToPoster(rec, shortId(rec.id))]);
+    // Fără bază de date, casa e singurul loc unde ajunge comanda: dacă n-a ajuns acolo, clientul
+    // trebuie să afle (mesaj cu telefonul restaurantului), nu să creadă că a comandat.
+    if (!store && !onTill) return json({ error: "till_unreachable" }, 502);
     return json({ ok: true, id: shortId(rec.id), total }, 201);
   } catch (err) {
     console.error("[orders] insert failed", err);
