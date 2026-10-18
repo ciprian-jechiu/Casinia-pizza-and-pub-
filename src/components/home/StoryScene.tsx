@@ -59,7 +59,7 @@ export function StoryScene() {
 
         <div data-text className="relative z-10 flex h-full flex-col items-center justify-end px-4 pb-[10svh] text-center text-crema">
           <p data-label className="eyebrow mb-6 opacity-80">{dict.home.storyLabel}</p>
-          <h2 id="story-title" className="font-sans text-[clamp(1.45rem,3.3vw,3.1rem)] font-extrabold uppercase leading-[1.04] tracking-[-0.015em]">
+          <h2 id="story-title" className="font-sans text-[clamp(1.45rem,3.3vw,3.1rem)] font-extrabold uppercase leading-[1.16] tracking-[-0.015em]">
             {dict.home.story.map((line, i) => {
               const { before, script, after } = parseLine(line);
               return (
