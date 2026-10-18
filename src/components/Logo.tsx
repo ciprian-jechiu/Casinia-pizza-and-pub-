@@ -14,7 +14,6 @@ export function Logo({ height = 56, className = "", priority = false }: { height
       width={Math.round(height * RATIO)}
       height={height}
       priority={priority}
-      unoptimized
       className={`block select-none ${className}`}
       style={{ height, width: "auto" }}
     />

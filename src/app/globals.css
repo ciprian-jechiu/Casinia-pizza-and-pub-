@@ -44,6 +44,10 @@
   :root {
     color-scheme: dark;
   }
+  /* fieldset are implicit min-width: min-content → un rând care derulează orizontal lărgea toată pagina pe telefon */
+  fieldset {
+    min-width: 0;
+  }
   html {
     background: var(--color-notte);
     color: var(--color-crema);

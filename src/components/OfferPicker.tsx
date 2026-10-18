@@ -110,11 +110,11 @@ export function OfferPicker({ item, compact = false, className = "" }: { item: M
                       </div>
                       <span className="min-w-0 flex-1 font-display text-lg leading-tight">{p.name[locale]}</span>
                       <div className="flex items-center rounded-full border border-linia">
-                        <button type="button" className="grid size-9 place-items-center text-lg disabled:opacity-30" onClick={() => change(id, -1)} disabled={!n} aria-label={`− ${p.name[locale]}`}>
+                        <button type="button" className="grid size-10 place-items-center text-lg disabled:opacity-30" onClick={() => change(id, -1)} disabled={!n} aria-label={`− ${p.name[locale]}`}>
                           −
                         </button>
                         <span className="w-5 text-center text-sm tabular-nums" aria-live="polite">{n}</span>
-                        <button type="button" className="grid size-9 place-items-center text-lg disabled:opacity-30" onClick={() => change(id, 1)} disabled={left <= 0} aria-label={`+ ${p.name[locale]}`}>
+                        <button type="button" className="grid size-10 place-items-center text-lg disabled:opacity-30" onClick={() => change(id, 1)} disabled={left <= 0} aria-label={`+ ${p.name[locale]}`}>
                           +
                         </button>
                       </div>

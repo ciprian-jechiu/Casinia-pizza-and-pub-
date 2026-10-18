@@ -8,6 +8,9 @@ import { usePathname } from "next/navigation";
 import { clearRestore, peekRestore } from "@/lib/cookies";
 
 gsap.registerPlugin(ScrollTrigger);
+// pe telefon bara de adresă apare/dispare la scroll și schimbă înălțimea ecranului;
+// fără asta, ScrollTrigger recalculează scenele fixate în mijlocul gestului → sacadări și salturi
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 let lenis: Lenis | null = null;
 export const getLenis = () => lenis;

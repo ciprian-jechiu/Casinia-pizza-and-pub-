@@ -52,7 +52,7 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-24 pt-28 sm:px-8 lg:pt-32">
-      <Link href={`/${lang}/meniu#${item.category}`} className="eyebrow text-crema-dim hover:text-crema">
+      <Link href={`/${lang}/meniu#${item.category}`} className="eyebrow -my-3 inline-block py-3 text-crema-dim hover:text-crema">
         ← {t.back}
       </Link>
 
@@ -193,8 +193,8 @@ export default async function ProductPage({ params }: PageProps<"/[lang]/meniu/[
                       <div className="grid h-full place-items-center bg-legno font-display text-xl text-crema-dim">{r.name[lang]}</div>
                     )}
                   </div>
-                  <div className="mt-3 flex items-baseline justify-between gap-3">
-                    <span className="font-display text-lg leading-tight group-hover:text-ottone">{r.name[lang]}</span>
+                  <div className="mt-3 flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
+                    <span className="min-w-0 hyphens-auto break-words font-display text-lg leading-tight group-hover:text-ottone">{r.name[lang]}</span>
                     <span className="shrink-0 text-sm text-ottone">{formatPrice(r.price, lang)}</span>
                   </div>
                 </Link>

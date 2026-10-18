@@ -31,7 +31,7 @@ const en: Dictionary = {
     menuOrder: "Order online",
     menuFull: "Full menu",
     menuPrice: "200–300 lei per person",
-    menuHint: "Tap a dish to add it to your cart.",
+    menuHint: "Tap a dish to see it and order.",
     added: "Added to cart",
     storyLabel: "Stăuceni — a passion for the taste of home",
     story: ["OUR STORY STARTED", "WITH A SIMPLE IDEA: A PLACE", "WHERE {authentic} RECIPES", "OF OUR ANCESTORS MEET", "WARM, {welcoming}", "SERVICE FOR ALL."],

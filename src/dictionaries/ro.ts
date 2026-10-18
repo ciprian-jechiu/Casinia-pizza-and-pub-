@@ -29,7 +29,7 @@ const ro = {
     menuOrder: "Comandă online",
     menuFull: "Meniul complet",
     menuPrice: "200–300 lei de persoană",
-    menuHint: "Atinge un preparat ca să-l adaugi în coș.",
+    menuHint: "Atinge un preparat ca să-l vezi și să-l comanzi.",
     added: "Adăugat în coș",
     storyLabel: "Stăuceni — o pasiune pentru gustul de acasă",
     story: ["POVESTEA NOASTRĂ A ÎNCEPUT", "CU O IDEE SIMPLĂ: UN LOC", "UNDE REȚETELE STRĂBUNE", "{autentice} ÎNTÂLNESC", "O SERVIRE CALDĂ,", "{primitoare} PENTRU TOȚI."],

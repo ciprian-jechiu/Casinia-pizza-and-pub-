@@ -64,6 +64,22 @@ export function Header() {
     };
   }, [pathname]);
 
+  // meniul mobil deschis: pagina din spate nu mai derulează, Esc îl închide
+  useEffect(() => {
+    if (!menuOpen) return;
+    const lenis = getLenis();
+    lenis?.stop();
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenFor(null);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      lenis?.start();
+      document.documentElement.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
   useEffect(() => {
     if (bump) controls.start({ scale: [1, 1.25, 0.95, 1], transition: { duration: 0.5 } });
   }, [bump, controls]);
@@ -96,7 +112,7 @@ export function Header() {
       </a>
       <header
         data-site-header
-        className={`site-header fixed inset-x-0 top-0 z-50 transition-[color,opacity,background-color] duration-500 ${ink ? "text-inchiostro" : "text-crema"} ${isHome ? "" : "border-b border-linia bg-notte"}`}
+        className={`site-header fixed inset-x-0 top-0 z-50 transition-[color,opacity,background-color] duration-500 ${ink ? "text-inchiostro" : "text-crema"} ${isHome && !menuOpen ? "" : "border-b border-linia bg-notte"}`}
       >
         <div className="mx-auto grid h-[4.5rem] max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-8">
           {/* stânga */}
@@ -201,7 +217,7 @@ export function Header() {
                         setOpenFor(null);
                         onAnchor(e, l.href);
                       }}
-                      className="block py-2 font-display text-4xl"
+                      className="block py-2.5 font-display text-4xl"
                     >
                       {l.label}
                     </Link>
@@ -213,15 +229,15 @@ export function Header() {
                       key={l}
                       href={switchLocalePath(pathname, l)}
                       onClick={() => switchLocale(l, switchLocalePath(pathname, l))}
-                  scroll={false}
-                      className={`eyebrow ${l === locale ? "text-ottone" : "opacity-60"}`}
+                      scroll={false}
+                      className={`eyebrow inline-block py-3 ${l === locale ? "text-ottone" : "opacity-60"}`}
                     >
                       {localeLabels[l]}
                     </Link>
                   ))}
                 </li>
                 <li className="mt-6">
-                  <a href={site.phoneHref} className="eyebrow opacity-80">{site.phone}</a>
+                  <a href={site.phoneHref} className="eyebrow inline-block py-3 opacity-80">{site.phone}</a>
                 </li>
               </ul>
             </motion.nav>

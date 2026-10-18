@@ -78,11 +78,11 @@ export function MenuBoard() {
             {c.id === "oferte" ? (
               <OffersGrid items={items} />
             ) : (
-            <ul className={`grid gap-x-12 gap-y-10 ${c.id === "pizza" ? "lg:grid-cols-2" : "md:grid-cols-2"}`}>
+            <ul className={`grid grid-cols-[minmax(0,1fr)] gap-x-12 gap-y-10 ${c.id === "pizza" ? "lg:grid-cols-2" : "md:grid-cols-2"}`}>
               {items.map((it) => (
-                <li key={it.id} className="flex gap-5">
+                <li key={it.id} className="flex min-w-0 gap-4 sm:gap-5">
                   {it.image ? (
-                    <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="relative size-24 shrink-0">
+                    <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="relative size-20 shrink-0 sm:size-24">
                       <span className="arch absolute inset-0 bg-legno">
                         <Image src={menuImage(it.image, 320)} alt="" fill sizes="6rem" className="object-cover transition-transform duration-700 hover:scale-105" />
                       </span>
@@ -93,7 +93,7 @@ export function MenuBoard() {
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-3">
-                      <h3 className="font-display text-2xl leading-tight">
+                      <h3 className="min-w-0 hyphens-auto break-words font-display text-[1.35rem] leading-tight sm:text-2xl">
                         <Link href={`/${locale}/meniu/${it.id}`} className="underline-offset-4 hover:text-ottone hover:underline">
                           {it.name[locale]}
                         </Link>
@@ -155,7 +155,7 @@ function OffersGrid({ items }: { items: MenuItem[] }) {
               </Link>
               <div className="flex flex-1 flex-col p-5">
                 <div className="flex items-baseline justify-between gap-3">
-                  <h3 className="font-display text-2xl leading-tight">
+                  <h3 className="min-w-0 hyphens-auto break-words font-display text-[1.35rem] leading-tight sm:text-2xl">
                     <Link href={`/${locale}/meniu/${it.id}`} className="hover:text-ottone">{it.name[locale]}</Link>
                   </h3>
                   <span className="shrink-0 font-display text-2xl text-ottone tabular-nums">{formatPrice(it.price, locale)}</span>
