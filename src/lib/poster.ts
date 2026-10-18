@@ -20,20 +20,28 @@ export const posterEnabled = () => Boolean(process.env.POSTER_TOKEN);
 type PosterProduct = { product_id: string; product_name: string; category_name?: string; price?: Record<string, string>; hidden?: string };
 type PosterSpot = { spot_id: string; spot_name?: string; name?: string; spot_adress?: string; address?: string };
 
-async function call<T>(method: string, init?: { body?: URLSearchParams; params?: Record<string, string> }): Promise<T> {
+async function call<T>(method: string, init?: { body?: URLSearchParams | Record<string, unknown>; params?: Record<string, string> }): Promise<T> {
   const token = process.env.POSTER_TOKEN;
   if (!token) throw new Error("[poster] POSTER_TOKEN lipsește");
   const qs = new URLSearchParams({ token, ...(init?.params ?? {}) });
+  const isForm = init?.body instanceof URLSearchParams;
   const res = await fetch(`${API}/${method}?${qs}`, {
     method: init?.body ? "POST" : "GET",
-    headers: init?.body ? { "content-type": "application/x-www-form-urlencoded" } : undefined,
-    body: init?.body,
+    headers: init?.body ? { "content-type": isForm ? "application/x-www-form-urlencoded" : "application/json" } : undefined,
+    body: init?.body ? (isForm ? (init.body as URLSearchParams) : JSON.stringify(init.body)) : undefined,
     cache: "no-store",
     signal: AbortSignal.timeout(15_000),
   });
-  const data = (await res.json().catch(() => null)) as { response?: T; error?: unknown; message?: string } | null;
+  const text = await res.text();
+  let data: { response?: T; error?: unknown; message?: string } | null = null;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    /* răspuns care nu e JSON */
+  }
   if (!res.ok || !data || data.error || data.response === undefined) {
-    throw new Error(`[poster] ${method}: ${res.status} ${JSON.stringify(data?.error ?? data?.message ?? data).slice(0, 300)}`);
+    // tot răspunsul, ca să se vadă motivul exact în jurnalul Vercel
+    throw new Error(`[poster] ${method}: HTTP ${res.status} — ${text.slice(0, 500)}`);
   }
   return data.response;
 }
@@ -222,11 +230,6 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
     }
   }
 
-  out.forEach((p, n) => {
-    body.set(`products[${n}][product_id]`, p.pid);
-    body.set(`products[${n}][count]`, String(p.count));
-    body.set(`products[${n}][price]`, String(Math.round(p.price * 100))); // în bani (kopecks)
-  });
   const n = out.length;
 
   const comment = [
@@ -247,8 +250,39 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
     // Poster cere cel puțin un produs: fără nicio potrivire, comanda rămâne doar în tabel/admin.
     throw new Error(`[poster] niciun produs al comenzii #${shortNo} nu are corespondent în Poster`);
   }
-  const res = await call<{ incoming_order_id?: number | string }>("incomingOrders.createIncomingOrder", { body });
-  return res.incoming_order_id ?? null;
+  // Variante de trimitere: dacă Poster refuză una, o încercăm pe următoarea (motivul fiecărei erori e păstrat).
+  const base = Object.fromEntries(body) as Record<string, string>;
+  const asForm = (withPrice: boolean) => {
+    const f = new URLSearchParams(base);
+    out.forEach((p, i) => {
+      f.set(`products[${i}][product_id]`, p.pid);
+      f.set(`products[${i}][count]`, String(p.count));
+      if (withPrice) f.set(`products[${i}][price]`, String(Math.round(p.price * 100))); // în bani
+    });
+    return f;
+  };
+  const asJson = (withPrice: boolean) => ({
+    ...base,
+    spot_id: Number(base.spot_id),
+    products: out.map((p) => ({ product_id: Number(p.pid), count: p.count, ...(withPrice ? { price: Math.round(p.price * 100) } : {}) })),
+  });
+  const attempts: [string, URLSearchParams | Record<string, unknown>][] = [
+    ["form+preț", asForm(true)],
+    ["json+preț", asJson(true)],
+    ["form fără preț", asForm(false)],
+    ["json fără preț", asJson(false)],
+  ];
+  const errors: string[] = [];
+  for (const [label, payload] of attempts) {
+    try {
+      const res = await call<{ incoming_order_id?: number | string }>("incomingOrders.createIncomingOrder", { body: payload });
+      if (errors.length) console.warn(`[poster] #${shortNo} a mers cu varianta „${label}” după: ${errors.join(" || ")}`);
+      return res.incoming_order_id ?? null;
+    } catch (err) {
+      errors.push(`${label}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  throw new Error(errors.join(" || "));
 }
 
 /** Folosit de serverul de comenzi: dacă nu e configurat Poster, nu face nimic. */
