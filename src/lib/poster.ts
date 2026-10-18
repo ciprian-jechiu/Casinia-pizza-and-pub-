@@ -233,7 +233,6 @@ export async function sendOrderToPoster(o: OrderRecord, shortNo: string) {
     `COMANDĂ DE PE SITE #${shortNo} — sunați clientul pentru confirmare`,
     `Client: ${o.name}, tel. ${phoneForPoster(o.phone)}`,
     o.method === "delivery" ? `LIVRARE: ${o.address ?? ""}` : "RIDICARE de la local",
-    `Ora: ${o.scheduled_time ?? "cât mai repede"}`,
     `Plata: ${o.payment === "cash" ? "numerar" : "card"}`,
     `Total site: ${o.total} lei`,
     details.length ? `Detalii: ${details.join("; ")}` : "",

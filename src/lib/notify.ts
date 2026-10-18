@@ -32,7 +32,7 @@ export function notifyOrder(o: OrderRecord) {
       `🍕 <b>Comandă nouă #${shortId(o.id)}</b>`,
       `${esc(o.name)} · ${esc(o.phone)}`,
       o.method === "delivery" ? `🚗 Livrare: ${esc(o.address ?? "")}` : "🏠 Ridicare de la local",
-      `⏰ ${o.scheduled_time ?? "cât mai repede"} · 💳 ${o.payment === "cash" ? "numerar" : "card"}`,
+      `💳 ${o.payment === "cash" ? "numerar" : "card"} · ora se stabilește la telefon`,
       "",
       ...lines,
       "",

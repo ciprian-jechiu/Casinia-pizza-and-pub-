@@ -12,9 +12,8 @@ import { normalizeGifts, promoFor } from "@/lib/promo";
 import { GiftChooser } from "../GiftChooser";
 import { ChoiceList } from "../CartDrawer";
 import { formatPrice } from "@/lib/i18n";
-import { orderSlotsToday } from "@/lib/schedule";
 import { site } from "@/lib/site";
-import { useClientValue, useHydrated } from "@/lib/useClient";
+import { useHydrated } from "@/lib/useClient";
 
 type Errors = Partial<Record<"name" | "phone" | "address" | "time" | "items" | "form", string>>;
 
@@ -26,15 +25,11 @@ export function CheckoutForm() {
   // ofertele (combo-uri, pizza 3+1) se comandă doar cu livrare
   const deliveryOnly = hasDeliveryOnly(lines);
   const method = deliveryOnly ? "delivery" : methodChoice;
-  const [when, setWhen] = useState<"asap" | "scheduled">("asap");
   const [zone, setZone] = useState<"stauceni" | "outside">("stauceni");
   const [payment, setPayment] = useState<"cash" | "card">("cash");
   const [errors, setErrors] = useState<Errors>({});
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState<{ id: string; phone: string } | null>(null);
-  // intervalele de azi depind de ora curentă, deci se calculează doar în browser (la minut)
-  const slotsKey = useClientValue(() => orderSlotsToday().join(","));
-  const slots = useMemo(() => (slotsKey ? slotsKey.split(",") : []), [slotsKey]);
 
   const { total } = cartTotals(lines);
   const promo = promoFor(lines);
@@ -63,8 +58,8 @@ export function CheckoutForm() {
       method,
       zone,
       address: String(fd.get("address") ?? ""),
-      when,
-      time: when === "scheduled" ? String(fd.get("time") ?? "") : undefined,
+      // ora livrării/ridicării se stabilește la telefon, când restaurantul confirmă comanda
+      when: "asap" as const,
       payment,
       notes: String(fd.get("notes") ?? ""),
       items: lines.map((l) => ({ id: l.id, qty: l.qty, ...(l.choices ? { choices: l.choices } : {}), ...(l.gift ? { gift: l.gift } : {}) })),
@@ -77,7 +72,6 @@ export function CheckoutForm() {
     if (payload.name.trim().length < 2) local.name = dict.errors.name;
     if (!/^\+?\d{8,15}$/.test(payload.phone.replace(/[\s().-]/g, ""))) local.phone = dict.errors.phone;
     if (method === "delivery" && payload.address.trim().length < 5) local.address = dict.errors.address;
-    if (when === "scheduled" && !payload.time) local.time = dict.errors.time;
     setErrors(local);
     if (Object.keys(local).length || belowMin) return;
 
@@ -189,26 +183,6 @@ export function CheckoutForm() {
           )}
         </AnimatePresence>
 
-        <fieldset>
-          <legend className="mb-3 text-sm text-crema-dim">{dict.checkout.time}</legend>
-          <div className="flex flex-wrap items-center gap-2">
-            {(["asap", "scheduled"] as const).map((w) => (
-              <label key={w} className="chip">
-                <input type="radio" name="when" value={w} checked={when === w} onChange={() => setWhen(w)} className="sr-only" disabled={w === "scheduled" && slots.length === 0} />
-                {w === "asap" ? dict.checkout.asap : dict.checkout.scheduled}
-              </label>
-            ))}
-            {when === "scheduled" && (
-              <select name="time" aria-label={dict.checkout.time} className="field w-auto min-w-32" aria-invalid={!!errors.time} defaultValue="">
-                <option value="" disabled>—</option>
-                {slots.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            )}
-          </div>
-          {errors.time && <p role="alert" className="mt-1.5 text-sm text-errore">{errors.time}</p>}
-        </fieldset>
 
         <fieldset>
           <legend className="mb-3 text-sm text-crema-dim">{dict.checkout.payment}</legend>
