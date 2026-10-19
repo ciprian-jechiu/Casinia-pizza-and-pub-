@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { fill, useI18n } from "../I18nProvider";
 import { AddToCart } from "../AddToCart";
-import { PromoBadge } from "../PromoBanner";
 import { categories, imageSize, itemsByCategory, menuImage, type CategoryId } from "@/lib/menu";
 import { formatPrice } from "@/lib/i18n";
 import { REVIEWS } from "@/lib/scenes";
@@ -157,7 +156,6 @@ export function MobileHome() {
               <li key={it.id} className="flex gap-3.5 border-b border-linia py-4">
                 <Link href={`/${locale}/meniu/${it.id}`} tabIndex={-1} aria-hidden className="relative size-[5.5rem] shrink-0 overflow-hidden rounded-2xl bg-legno">
                   {it.image && <Image src={menuImage(it.image, 320)} alt="" width={w} height={h} sizes="88px" className="size-full object-cover" />}
-                  {it.category === "pizza" && <PromoBadge className="absolute right-1 top-1 z-10 scale-75" />}
                 </Link>
                 <div className="flex min-w-0 flex-1 flex-col">
                   <h3 className="font-display text-[1.15rem] leading-tight">

@@ -2,7 +2,7 @@ import type { Locale } from "./i18n";
 
 export type L10n = Record<Locale, string>;
 
-export type CategoryId = "oferte" | "pizza" | "fastfood" | "garnituri";
+export type CategoryId = "oferte" | "pizza" | "fastfood";
 
 export type MenuItem = {
   id: string;
@@ -85,7 +85,6 @@ export const categories: { id: CategoryId; name: L10n }[] = [
   { id: "oferte", name: { ro: "Oferte", ru: "Акции", en: "Offers" } },
   { id: "pizza", name: { ro: "Pizza", ru: "Пицца", en: "Pizza" } },
   { id: "fastfood", name: { ro: "Burgeri și gustări", ru: "Бургеры и закуски", en: "Burgers & bites" } },
-  { id: "garnituri", name: { ro: "Garnituri", ru: "Гарниры", en: "Sides" } },
 ];
 
 const same = (s: string): L10n => ({ ro: s, ru: s, en: s });
@@ -470,10 +469,9 @@ export const menu: MenuItem[] = [
     image: "3ae366a9-9f1b-45c4-804c-7308a6413028_image.jpeg",
   },
 
-  // ───────────── GARNITURI ─────────────
   {
     id: "cartofi-fries",
-    category: "garnituri",
+    category: "fastfood",
     name: { ro: "Cartofi fries", ru: "Картофель фри", en: "French fries" },
     description: { ro: "Cu sos de usturoi", ru: "С чесночным соусом", en: "With garlic sauce" },
     weight: "200 g + 50 g",
@@ -482,7 +480,7 @@ export const menu: MenuItem[] = [
   },
   {
     id: "cartofi-wedges",
-    category: "garnituri",
+    category: "fastfood",
     name: { ro: "Cartofi wedges", ru: "Картофельные дольки", en: "Potato wedges" },
     description: { ro: "Cu sos de usturoi", ru: "С чесночным соусом", en: "With garlic sauce" },
     weight: "200 g + 50 g",

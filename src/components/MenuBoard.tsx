@@ -7,7 +7,7 @@ import { motion } from "motion/react";
 import { useI18n } from "./I18nProvider";
 import { AddToCart } from "./AddToCart";
 import { getLenis } from "./SmoothScroll";
-import { PromoBadge, PromoBanner } from "./PromoBanner";
+import { PromoBanner } from "./PromoBanner";
 import { OfferPicker } from "./OfferPicker";
 import { site } from "@/lib/site";
 import { categories, imageSize, itemsByCategory, menuImage, type CategoryId, type MenuItem } from "@/lib/menu";
@@ -86,7 +86,6 @@ export function MenuBoard() {
                       <span className="arch absolute inset-0 bg-legno">
                         <Image src={menuImage(it.image, 320)} alt="" fill sizes="6rem" className="object-cover transition-transform duration-700 hover:scale-105" />
                       </span>
-                      {it.category === "pizza" && <PromoBadge className="absolute -right-2 -top-2 z-10" />}
                     </Link>
                   ) : (
                     <div className="hidden size-24 shrink-0 sm:block" aria-hidden />
