@@ -6,6 +6,7 @@ import { hasLocale, locales } from "@/lib/i18n";
 import { site } from "@/lib/site";
 import { I18nProvider } from "@/components/I18nProvider";
 import { Header } from "@/components/Header";
+import { MobileActionBar } from "@/components/MobileActionBar";
 import { Footer } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
 import { SmoothScroll } from "@/components/SmoothScroll";
@@ -75,6 +76,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
           <Header />
           <main id="main">{children}</main>
           <Footer locale={lang} dict={dict} />
+          <MobileActionBar />
           <CartDrawer />
         </I18nProvider>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />

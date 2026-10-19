@@ -28,6 +28,7 @@ export function Header() {
   const { locale, dict } = useI18n();
   const pathname = usePathname();
   const [tone, setTone] = useState<"dark" | "light">("dark");
+  const [scrolled, setScrolled] = useState(false);
   const [openFor, setOpenFor] = useState<string | null>(null);
   const menuOpen = openFor === pathname;
   const lines = useCart((s) => s.lines);
@@ -50,6 +51,7 @@ export function Header() {
           next = el.dataset.headerTone as "dark" | "light";
       });
       setTone(next);
+      setScrolled(window.scrollY > 40);
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(check);
@@ -112,7 +114,7 @@ export function Header() {
       </a>
       <header
         data-site-header
-        className={`site-header fixed inset-x-0 top-0 z-50 transition-[color,opacity,background-color] duration-500 ${ink ? "text-inchiostro" : "text-crema"} ${isHome && !menuOpen ? "" : "border-b border-linia bg-notte"}`}
+        className={`site-header fixed inset-x-0 top-0 z-50 transition-[color,opacity,background-color] duration-500 ${ink ? "text-inchiostro" : "text-crema"} ${isHome && !menuOpen ? (scrolled ? "max-lg:border-b max-lg:border-linia max-lg:bg-notte/95 max-lg:backdrop-blur" : "") : "border-b border-linia bg-notte"}`}
       >
         <div className="mx-auto grid h-[4.5rem] max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-8">
           {/* stânga */}
