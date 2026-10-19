@@ -125,15 +125,7 @@ const RECIPES: Record<string, Recipe> = {
 
   "cartofi-fries": { parts: [["fries", 200], ["sosUsturoi", 50]] },
   "cartofi-wedges": { parts: [["wedges", 200], ["sosUsturoi", 50]] },
-  "cartofi-rozmarin": { estimated: true, parts: [["cartofRozmarin", 200]] },
-  "cartof-ca-acasa": { estimated: true, parts: [["cartofCasa", 200]] },
-  "cartof-ca-acasa-bacon": { estimated: true, parts: [["cartofCasa", 170], ["bacon", 30]] },
-  "piure-cartof": { estimated: true, parts: [["piure", 200]] },
-  "piure-broccoli": { estimated: true, parts: [["piureBroccoli", 200]] },
-  "legume-coapte": { estimated: true, parts: [["legumeCoapte", 200]] },
 
-  "omleta-clasica": { estimated: true, parts: [["omleta", 200]] },
-  "clatite-pui-ciuperci": { estimated: true, parts: [["clatita", 150], ["pui", 60], ["ciuperci", 40]] },
 };
 
 export type Nutrition = {

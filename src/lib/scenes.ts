@@ -28,7 +28,6 @@ export const CATEGORY_IMAGE: Record<CategoryId, { src: string; alt: string }> = 
   pizza: { src: "/oven-pizza.jpg", alt: "Pizza pe lopată, în gura cuptorului" },
   fastfood: { src: menuImage("e3150c0a-08ae-4829-b71a-6dbd49e3bbbf_image.png", 1600), alt: "Double Cheese Burger" },
   garnituri: { src: menuImage("244b4fb9-4c39-43ce-a1e2-c6fa6a38476b_image.png", 1600), alt: "Asorti de cartofi" },
-  micdejun: { src: u("1709754521379-00166805eea4"), alt: "Omletă" },
 };
 
 /** Fotografii de preparate pentru peretele de recenzii (din meniul oficial Casinia). */

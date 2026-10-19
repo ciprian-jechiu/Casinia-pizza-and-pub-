@@ -2,7 +2,7 @@ import type { Locale } from "./i18n";
 
 export type L10n = Record<Locale, string>;
 
-export type CategoryId = "oferte" | "pizza" | "fastfood" | "garnituri" | "micdejun";
+export type CategoryId = "oferte" | "pizza" | "fastfood" | "garnituri";
 
 export type MenuItem = {
   id: string;
@@ -86,7 +86,6 @@ export const categories: { id: CategoryId; name: L10n }[] = [
   { id: "pizza", name: { ro: "Pizza", ru: "Пицца", en: "Pizza" } },
   { id: "fastfood", name: { ro: "Burgeri și gustări", ru: "Бургеры и закуски", en: "Burgers & bites" } },
   { id: "garnituri", name: { ro: "Garnituri", ru: "Гарниры", en: "Sides" } },
-  { id: "micdejun", name: { ro: "Mic dejun", ru: "Завтрак", en: "Breakfast" } },
 ];
 
 const same = (s: string): L10n => ({ ro: s, ru: s, en: s });
@@ -490,16 +489,7 @@ export const menu: MenuItem[] = [
     price: 55,
     image: "d65279be-6038-4336-956c-3879d130e603_image.jpeg",
   },
-  { id: "cartofi-rozmarin", category: "garnituri", name: { ro: "Cartofi cu rozmarin", ru: "Картофель с розмарином", en: "Rosemary potatoes" }, price: 80 },
-  { id: "cartof-ca-acasa", category: "garnituri", name: { ro: "Cartofi ca acasă", ru: "Картофель по-домашнему", en: "Home-style potatoes" }, price: 80 },
-  { id: "cartof-ca-acasa-bacon", category: "garnituri", name: { ro: "Cartofi ca acasă cu bacon", ru: "Картофель по-домашнему с беконом", en: "Home-style potatoes with bacon" }, price: 90 },
-  { id: "piure-cartof", category: "garnituri", name: { ro: "Piure de cartofi", ru: "Картофельное пюре", en: "Mashed potatoes" }, price: 90 },
-  { id: "piure-broccoli", category: "garnituri", name: { ro: "Piure de broccoli", ru: "Пюре из брокколи", en: "Broccoli purée" }, price: 90 },
-  { id: "legume-coapte", category: "garnituri", name: { ro: "Legume coapte", ru: "Запечённые овощи", en: "Roasted vegetables" }, price: 85 },
 
-  // ───────────── MIC DEJUN ─────────────
-  { id: "omleta-clasica", category: "micdejun", name: { ro: "Omletă clasică", ru: "Классический омлет", en: "Classic omelette" }, price: 90 },
-  { id: "clatite-pui-ciuperci", category: "micdejun", name: { ro: "Clătite cu pui și ciuperci", ru: "Блины с курицей и грибами", en: "Crêpes with chicken and mushrooms" }, price: 130 },
 ];
 
 export const menuById = new Map(menu.map((m) => [m.id, m]));

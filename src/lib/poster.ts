@@ -88,10 +88,6 @@ const DEFAULT_MAP: Record<string, string> = {
   "aripi-krispy": "13", // ARIPI DE PUI KRISPY
   "nuggets-copii": "128", // Nughete copii
   "cartofi-wedges": "11", // CARTOFI WEGES
-  "cartof-ca-acasa": "189", // Cartof ca acasa (FAST FOOD)
-  "cartof-ca-acasa-bacon": "190", // Cartof ca acasa cu bacon
-  "piure-cartof": "186", // Piureu de cartof
-  "piure-broccoli": "191", // Piure din brocolli
   pepsi: "154", // Pepsi Cola 0.25l — Pepsi-ul cadou din combo-uri
 };
 
